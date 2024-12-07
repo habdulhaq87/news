@@ -1,57 +1,67 @@
-import streamlit as st
 import json
-from datetime import datetime
+import os
 
-# Path to save the news data
-news_file = "news.json"
+# Path to the news JSON file
+NEWS_FILE = "news.json"
 
-# Load existing news if available
-try:
-    with open(news_file, "r") as file:
-        news_data = json.load(file)
-except FileNotFoundError:
-    news_data = []
+def get_existing_news():
+    """Load existing news from the JSON file."""
+    if os.path.exists(NEWS_FILE):
+        with open(NEWS_FILE, "r", encoding="utf-8") as file:
+            return json.load(file)
+    return []
 
-# Streamlit inputs
-st.title("📰 Add News to JSON")
-st.write("Fill out the form below to create a news entry:")
+def save_news(news_list):
+    """Save the updated news list to the JSON file."""
+    with open(NEWS_FILE, "w", encoding="utf-8") as file:
+        json.dump(news_list, file, ensure_ascii=False, indent=4)
 
-title = st.text_input("Title:")
-subtitle = st.text_input("Subtitle:")
-content = st.text_area("Content:", height=200)
-takeaway = st.text_input("Takeaway Message:")
-image_file = st.file_uploader("Upload a photo for the news:", type=["png", "jpg", "jpeg"])
+def add_news():
+    """Prompt user to add a news article."""
+    print("=== Add a New News Article ===")
+    title = input("Title: ").strip()
+    subtitle = input("Subtitle: ").strip()
+    content = input("Content: ").strip()
+    takeaway = input("Takeaway Message: ").strip()
+    image_url = input("Image URL (or upload later): ").strip()
 
-# Generate a unique ID and timestamp
-news_id = f"news_{len(news_data) + 1}"
-timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Add the new news article
+    news_list = get_existing_news()
+    news_list.append({
+        "title": title,
+        "subtitle": subtitle,
+        "content": content,
+        "takeaway": takeaway,
+        "image_url": image_url
+    })
+    save_news(news_list)
+    print("✅ News article added successfully!")
 
-if st.button("Save News"):
-    if not (title and content and takeaway):
-        st.error("Title, content, and takeaway message are required!")
-    else:
-        # Save the image if uploaded
-        image_path = None
-        if image_file:
-            image_path = f"images/{image_file.name}"
-            with open(image_path, "wb") as img_file:
-                img_file.write(image_file.read())
+def main():
+    """Main menu for managing news."""
+    while True:
+        print("\n=== News Management ===")
+        print("1. Add a new news article")
+        print("2. View existing news articles")
+        print("3. Exit")
+        choice = input("Choose an option: ").strip()
 
-        # Append the new news item
-        new_news = {
-            "id": news_id,
-            "title": title,
-            "subtitle": subtitle,
-            "content": content,
-            "takeaway": takeaway,
-            "image": image_path,
-            "timestamp": timestamp,
-        }
-        news_data.append(new_news)
+        if choice == "1":
+            add_news()
+        elif choice == "2":
+            news_list = get_existing_news()
+            if not news_list:
+                print("No news articles found.")
+            else:
+                for idx, news in enumerate(news_list, start=1):
+                    print(f"\n{idx}. {news['title']}")
+                    print(f"   Subtitle: {news['subtitle']}")
+                    print(f"   Takeaway: {news['takeaway']}")
+        elif choice == "3":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
 
-        # Save to JSON
-        with open(news_file, "w") as file:
-            json.dump(news_data, file, indent=4)
-
-        st.success("News saved successfully!")
-        st.balloons()
+if __name__ == "__main__":
+    main()
