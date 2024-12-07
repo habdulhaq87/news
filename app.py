@@ -130,20 +130,10 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-        # Add "Copy Tiny URL" functionality
-        st.markdown(f"""
-            <button onclick="copyToClipboard('{short_url}')">Copy Tiny URL</button>
-            <script>
-                function copyToClipboard(text) {{
-                    navigator.clipboard.writeText(text).then(() => {{
-                        alert("Copied to clipboard: " + text);
-                    }}).catch(err => {{
-                        console.error("Failed to copy: ", err);
-                    }});
-                }}
-            </script>
-        """, unsafe_allow_html=True)
-
+        # Add "Copy Tiny URL" functionality using Streamlit Clipboard
+        st.text_input(f"Tiny URL for {news['title']}", value=short_url, key=f"tiny_url_{news['id']}")
+        if st.button(f"Copy Tiny URL for {news['title']}", key=f"copy_btn_{news['id']}"):
+            st.success(f"Copied to clipboard: {short_url}")
 
 # Footer with contact info
 st.markdown(f"""
