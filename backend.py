@@ -73,24 +73,6 @@ def save_news_data(news_data):
         json.dump(news_data, file, ensure_ascii=False, indent=4)
     upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
 
-# AI Suggestions for Writing Content
-def suggest_content(text):
-    api_url = "https://api.openai.com/v1/completions"
-    headers = {
-        "Authorization": f"Bearer {st.secrets['openai_api_key']}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": "text-davinci-003",
-        "prompt": f"Improve the following content: {text}",
-        "max_tokens": 150,
-        "temperature": 0.7
-    }
-    response = requests.post(api_url, headers=headers, json=payload)
-    if response.status_code == 200:
-        return response.json().get("choices")[0].get("text").strip()
-    return "No suggestions available."
-
 # Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")
 
@@ -103,12 +85,6 @@ st.write("Manage your news articles dynamically. Add, edit, delete, or post arti
 
 # Add a new article
 st.header("Add New Article")
-
-# Separate AI suggestions outside the form
-content_for_suggestions = st_quill("Write your content here and get suggestions", key="content_suggestions")
-if st.button("Get Suggestions for Content"):
-    suggestions = suggest_content(content_for_suggestions or "")
-    st.write(f"Suggestions: {suggestions}")
 
 with st.form("add_article_form", clear_on_submit=True):
     new_title = st.text_input("Title", key="new_title")
