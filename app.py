@@ -47,7 +47,7 @@ _{subtitle}_
 
 🔗 [Read more]({link})
 
-📌 **Takeaway**:
+📌 :
 {takeaway}
     """
     payload = {
