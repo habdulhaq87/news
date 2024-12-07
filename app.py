@@ -133,7 +133,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Display the latest article
-st.image(news["image_url"], use_column_width=True, caption=news["subtitle"])
+st.image(news["image_url"], use_container_width=True, caption=news["subtitle"])  # Updated for new parameter
 st.markdown(f"""
     <div class="news-container">
         <div class="news-title">{news["title"]}</div>
