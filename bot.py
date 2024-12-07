@@ -31,7 +31,7 @@ _{subtitle}_
 
 🔗 [Read more]({link})
 
-📌 **Takeaway**:
+📌 **بە کورتی**:
 {takeaway}
     """
     
