@@ -99,13 +99,9 @@ if selected_news:
             <div class="news-title">{selected_news["title"]}</div>
             <div class="news-subtitle">{selected_news["subtitle"]}</div>
             <div class="news-content">{selected_news["content"]}</div>
+            <div class="news-takeaway">*: {selected_news["takeaway"]}</div>
         </div>
     """, unsafe_allow_html=True)
-    
-    if "takeaway" in selected_news and selected_news["takeaway"].strip():
-        st.markdown(f"""
-            <div class="news-takeaway">{selected_news["takeaway"]}</div>
-        """, unsafe_allow_html=True)
 else:
     # Display all news articles with previews
     for news in news_data:
