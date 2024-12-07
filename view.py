@@ -19,7 +19,14 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
             # Edit article fields
             edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
             edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
-            edit_content = st_quill("Edit your content here", value=article["content"], key=f"edit_content_{i}")
+            
+            # Correct implementation of st_quill
+            edit_content = st_quill(
+                label="Edit your content here",
+                key=f"edit_content_{i}",
+                default=article["content"]  # Use 'default' instead of 'value'
+            )
+            
             edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
             
             # Display current image
