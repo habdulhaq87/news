@@ -1,10 +1,10 @@
 import streamlit as st
 from streamlit_quill import st_quill
-from bot import post_to_telegram
+from bot import post_to_telegram  # Import Telegram posting functionality
 
 def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
     """
-    Display and manage articles: edit, delete, and post to Telegram with debugging.
+    Display and manage articles: edit, delete, and post to Telegram.
     
     Args:
         news_data (list): List of articles loaded from the JSON file.
