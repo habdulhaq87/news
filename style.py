@@ -42,8 +42,8 @@ def apply_styles():
             }
 
             .footer-item img {
-                width: 60px;
-                height: 60px;
+                width: 80px; /* Increased width */
+                height: 80px; /* Increased height */
                 margin-bottom: 10px;
             }
 
@@ -65,6 +65,7 @@ def apply_styles():
             }
         </style>
     """, unsafe_allow_html=True)
+
 
 
 def footer():
