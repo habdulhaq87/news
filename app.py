@@ -1,5 +1,5 @@
 import streamlit as st
-from urllib.parse import urlencode, parse_qs
+from urllib.parse import urlencode
 
 # Set the page configuration
 st.set_page_config(page_title="Instant News", page_icon="📰", layout="wide")
@@ -23,7 +23,7 @@ else:
 
     # Shareable link generation
     if st.button("Share this news"):
-        base_url = "https://your-github-deployment-url.com"
+        base_url = "https://q5c32sstqku8zyyrmxtcil.streamlit.app"  # Your deployed Streamlit app URL
         share_params = {
             "title": "Breaking News: Streamlit Makes Sharing Easy!",
             "content": news_content,
