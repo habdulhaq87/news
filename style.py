@@ -1,14 +1,23 @@
 import streamlit as st
 
+# Global style configuration dictionary
+STYLE_CONFIG = {
+    "background_color": "#f4f4f4",
+    "font_family": "'SpedaBold', Arial, sans-serif",
+    "primary_color": "#007bff",
+    "news_title_size": "36px",
+    "news_content_size": "20px",
+    "footer_bg_color": "#f8f9fa",
+    "footer_border_color": "#dee2e6",
+}
 
-@st.cache_data
-def apply_styles():
+def generate_styles():
     """
-    Apply custom CSS styles for the application.
+    Generate CSS styles dynamically based on STYLE_CONFIG.
     """
-    st.markdown("""
+    return f"""
         <style>
-            @font-face {
+            @font-face {{
                 font-family: 'SpedaBold';
                 src: url('font/Speda-Bold.eot');
                 src: url('font/Speda-Bold.eot?#iefix') format('embedded-opentype'),
@@ -17,56 +26,42 @@ def apply_styles():
                      url('font/Speda-Bold.svg#SpedaBold') format('svg');
                 font-weight: normal;
                 font-style: normal;
-            }
+            }}
 
-            body {
-                background-color: #f4f4f4;
-                font-family: 'SpedaBold', Arial, sans-serif;
+            body {{
+                background-color: {STYLE_CONFIG['background_color']};
+                font-family: {STYLE_CONFIG['font_family']};
                 direction: rtl;
-            }
+            }}
 
-            .footer-container {
-                background-color: #f8f9fa;
-                padding: 20px;
-                text-align: center;
-                border-top: 2px solid #dee2e6;
-                margin-top: 30px;
-                display: flex;
-                justify-content: center;
-                gap: 50px;
-            }
-
-            .footer-item {
-                text-align: center;
-                font-family: Arial, sans-serif;
-            }
-
-            .footer-item img {
-                width: 120px; /* Increased width */
-                height: 120px; /* Increased height */
+            .news-title {{
+                font-size: {STYLE_CONFIG['news_title_size']};
+                color: {STYLE_CONFIG['primary_color']};
                 margin-bottom: 10px;
-            }
+            }}
 
-            .footer-item a {
-                text-decoration: none;
-                color: #007bff;
-                font-size: 16px;
-                font-weight: bold;
-            }
+            .news-content {{
+                font-size: {STYLE_CONFIG['news_content_size']};
+                line-height: 1.8;
+                color: #555555;
+                margin-bottom: 20px;
+            }}
 
-            .footer-item a:hover {
-                text-decoration: underline;
-            }
-
-            .footer-item p {
-                margin: 5px 0 0;
-                font-size: 14px;
-                color: #333;
-            }
+            .footer-container {{
+                background-color: {STYLE_CONFIG['footer_bg_color']};
+                padding: 20px 0;
+                text-align: center;
+                border-top: 2px solid {STYLE_CONFIG['footer_border_color']};
+                margin-top: 30px;
+            }}
         </style>
-    """, unsafe_allow_html=True)
+    """
 
-
+def apply_styles():
+    """
+    Apply custom CSS styles dynamically.
+    """
+    st.markdown(generate_styles(), unsafe_allow_html=True)
 
 def footer():
     """
@@ -88,13 +83,3 @@ def footer():
             </div>
         </div>
     """, unsafe_allow_html=True)
-
-
-def clear_cache():
-    """
-    Provide a button to clear Streamlit's cache.
-    """
-    if st.sidebar.button("Clear Cache"):
-        st.cache_data.clear()
-        st.cache_resource.clear()
-        st.experimental_rerun()
