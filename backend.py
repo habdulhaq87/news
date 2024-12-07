@@ -119,4 +119,4 @@ if navigation == "Add New Article":
 
 # Page: View Articles
 elif navigation == "View Articles":
-    view_articles(news_data, save_news_data, save_uploaded_image_to_github)
+    view_articles(news_data, save_news_data, save_uploaded_image_to_github, post_to_telegram)
