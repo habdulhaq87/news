@@ -127,8 +127,8 @@ def footer():
             
             <!-- Website Section -->
             <div class="footer-item">
-                <a href="https://www.habdulhaq.com" target="_blank">
-                    <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.JPG" alt="DT Logo">
+                <a href="https://github.com/habdulhaq87/news/blob/main/photo/DT.jpg" target="_blank">
+                    <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.jpg" alt="DT Logo">
                     <p>پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
                 </a>
             </div>
@@ -154,8 +154,8 @@ def style_page():
                     </a>
                 </div>
                 <div class="footer-item">
-                    <a href="https://www.habdulhaq.com" target="_blank">
-                        <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.JPG" alt="DT Logo">
+                    <a href="https://github.com/habdulhaq87/news/blob/main/photo/DT.jpg" target="_blank">
+                        <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.jpg" alt="DT Logo">
                         <p>پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
                     </a>
                 </div>
