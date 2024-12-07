@@ -1,8 +1,10 @@
+
 import streamlit as st
 import json
 import os
 import requests
 import base64
+
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"  # Your GitHub username
@@ -30,7 +32,7 @@ def save_news_data_local(news_data):
     with open(JSON_FILE, "w", encoding="utf-8") as file:
         json.dump(news_data, file, ensure_ascii=False, indent=4)
 
-# Upload news data to GitHub
+
 def upload_to_github(file_path):
     # Read file content
     with open(file_path, "r", encoding="utf-8") as file:
