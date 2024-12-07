@@ -1,6 +1,6 @@
 import streamlit as st
 
-
+@st.cache_data
 def apply_styles():
     """
     Apply custom CSS styles for the application.
@@ -111,6 +111,7 @@ def apply_styles():
     """, unsafe_allow_html=True)
 
 
+@st.cache_resource
 def footer():
     """
     Add a styled footer to the application.
@@ -127,7 +128,7 @@ def footer():
             
             <!-- Website Section -->
             <div class="footer-item">
-                <a href="https://github.com/habdulhaq87/news/blob/main/photo/DT.jpg" target="_blank">
+                <a href="https://www.habdulhaq.com" target="_blank">
                     <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.jpg" alt="DT Logo">
                     <p>پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
                 </a>
@@ -154,7 +155,7 @@ def style_page():
                     </a>
                 </div>
                 <div class="footer-item">
-                    <a href="https://github.com/habdulhaq87/news/blob/main/photo/DT.jpg" target="_blank">
+                    <a href="https://www.habdulhaq.com" target="_blank">
                         <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.jpg" alt="DT Logo">
                         <p>پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
                     </a>
@@ -164,3 +165,15 @@ def style_page():
     """, unsafe_allow_html=True)
 
     st.info("This is a preview of the footer. To modify the styles, update `style_page.py` as needed.")
+
+
+### How to Clean Cache
+def clear_cache():
+    """
+    Provide a button to clear Streamlit's cache.
+    """
+    if st.sidebar.button("Clear Cache"):
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        st.experimental_rerun()
+
