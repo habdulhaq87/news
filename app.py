@@ -130,8 +130,8 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-        # Display Tiny URL below the news title
-        st.text_input(f"Tiny URL for {news['title']}", value=short_url, key=f"tiny_url_{news['id']}", disabled=True)
+        # Display Tiny URL in a read-only text input
+        st.text_input(f"Tiny URL for {news['title']}", value=short_url, key=f"tiny_url_{news['id']}")
 
 # Footer with contact info
 st.markdown(f"""
