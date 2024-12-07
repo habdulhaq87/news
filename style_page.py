@@ -81,7 +81,7 @@ def footer():
     """
     Add a styled footer to the application.
     """
-    st.markdown(f"""
+    st.markdown("""
         <div class="footer-container">
             <!-- Telegram Section -->
             <div class="footer-item">
