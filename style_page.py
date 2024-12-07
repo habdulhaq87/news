@@ -126,10 +126,4 @@ def style_page():
     # Apply styles dynamically
     if submitted:
         apply_styles(style_params)
-        st.success("Styles updated successfully! Refresh the page to see changes take effect.")
-
-    # Preview Footer
-    st.subheader("Footer Preview")
-    footer()
-
-    st.info("This preview reflects the current style parameters. Use the inputs above to customize further.")
+        st.success("Styles updated successfully!")
