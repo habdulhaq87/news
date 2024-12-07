@@ -19,63 +19,55 @@ def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
     Returns:
         bool: True if posted successfully, False otherwise.
     """
-    # Format the message
+    # Create the message body
     message = f"""
 🌟 **{title}**
 _{subtitle}_
 
-{content[:200]}...  *(Read more in the full article)*
+{content[:200]}... *(Read more in the full article)*
 
 🔗 [Read more]({link})
 
 📌 **Takeaway**:
 {takeaway}
     """
-    # Construct the payload for Telegram API
+    
+    # Define the payload for the Telegram API
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "photo": image_url,
         "caption": message,
         "parse_mode": "Markdown",
     }
-
-    # Telegram API endpoint
+    
+    # Construct the Telegram API URL
     telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-
+    
     try:
-        # Send the POST request to Telegram API
+        # Send the POST request to Telegram
         response = requests.post(telegram_url, data=payload)
         if response.status_code == 200:
             print("Posted successfully to Telegram!")
             return True
         else:
-            # Log failure details
             print(f"Failed to post to Telegram. Status code: {response.status_code}")
-            try:
-                print(f"Response: {response.json()}")
-            except Exception as json_error:
-                print(f"Error parsing JSON response: {json_error}")
+            print(f"Response: {response.json()}")
             return False
-    except requests.exceptions.RequestException as req_error:
-        # Handle network-related errors
-        print(f"Request error while posting to Telegram: {req_error}")
-        return False
     except Exception as e:
-        # Log any unexpected exceptions
-        print(f"Unexpected error posting to Telegram: {e}")
+        print(f"Error posting to Telegram: {e}")
         return False
 
 # Example usage for testing
 if __name__ == "__main__":
-    # Sample data
-    sample_title = "Test Title"
-    sample_subtitle = "This is a subtitle"
-    sample_content = "This is the content of the article. It's quite engaging and informative."
-    sample_takeaway = "Key takeaways are essential for summaries."
+    # Sample article data
+    sample_title = "Test Article Title"
+    sample_subtitle = "A sample subtitle for the article."
+    sample_content = "This is a brief snippet of the article content, highlighting the main points of the news."
+    sample_takeaway = "Key insights or takeaways from the article."
     sample_image_url = "https://via.placeholder.com/800x400.png"
     sample_link = "https://example.com/full-article"
 
-    # Post to Telegram
+    # Call the function to post to Telegram
     result = post_to_telegram(
         title=sample_title,
         subtitle=sample_subtitle,
@@ -86,6 +78,6 @@ if __name__ == "__main__":
     )
 
     if result:
-        print("Article posted successfully.")
+        print("Article posted to Telegram successfully.")
     else:
         print("Failed to post the article.")
