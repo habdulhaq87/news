@@ -7,9 +7,9 @@ import time
 from streamlit_quill import st_quill  # Rich text editor
 
 # Constants for GitHub integration
-GITHUB_USER = "habdulhaq87"  # Your GitHub username
-GITHUB_REPO = "news"         # Your repository name
-GITHUB_PAT = st.secrets["github_pat"]  # Personal Access Token from Streamlit secrets
+GITHUB_USER = "habdulhaq87"
+GITHUB_REPO = "news"
+GITHUB_PAT = st.secrets["github_pat"]
 
 JSON_FILE = "news.json"
 PHOTO_DIR = "photo"
@@ -106,13 +106,13 @@ st.header("Add New Article")
 # Separate AI suggestions outside the form
 content_for_suggestions = st_quill("Write your content here and get suggestions", key="content_suggestions")
 if st.button("Get Suggestions for Content"):
-    suggestions = suggest_content(content_for_suggestions)
+    suggestions = suggest_content(content_for_suggestions or "")
     st.write(f"Suggestions: {suggestions}")
 
 with st.form("add_article_form", clear_on_submit=True):
     new_title = st.text_input("Title", key="new_title")
     new_subtitle = st.text_input("Subtitle", key="new_subtitle")
-    new_content = st_quill("Write your content here", key="new_content")  # Rich text editor
+    new_content = st_quill("Write your content here", key="new_content")  # Initialize blank editor
     new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway")
     uploaded_image = st.file_uploader("Upload Image (jpg, png)", type=["jpg", "png"], key="new_image")
 
@@ -142,7 +142,7 @@ for i, article in enumerate(news_data):
     with st.expander("View / Edit Article"):
         edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
         edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
-        edit_content = st_quill("Edit your content here", value=article["content"], key=f"edit_content_{i}")
+        edit_content = st_quill("Edit your content here", key=f"edit_content_{i}")  # No direct `value`
         edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
         st.image(article["image_url"], caption="Current Image", use_column_width=True)
         uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
@@ -157,7 +157,7 @@ for i, article in enumerate(news_data):
                 "id": edit_title.replace(" ", "_").lower(),
                 "title": edit_title,
                 "subtitle": edit_subtitle,
-                "content": edit_content,
+                "content": edit_content or article["content"],
                 "takeaway": edit_takeaway,
                 "image_url": article["image_url"],
             }
@@ -166,4 +166,4 @@ for i, article in enumerate(news_data):
         if st.button("Delete Article", key=f"delete_{i}"):
             del news_data[i]
             save_news_data(news_data)
-            st.experimental_rerun()  # Refresh the app
+            st.experimental_rerun()
