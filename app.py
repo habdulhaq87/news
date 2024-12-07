@@ -2,17 +2,21 @@ import streamlit as st
 from urllib.parse import urlencode
 
 # Set up page configuration
-st.set_page_config(page_title="Instant News", page_icon="📰", layout="wide")
+st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
 
 # Single news article
 news_id = "ai_and_streaming"
-news_title = "AI and Streaming: Key Updates"
+news_title = "AI و بڵاوکردنەوە: نوێترین هاوکاتەکان"
 news_content = """
-AI and streaming services are undergoing big changes. OpenAI’s CEO Sam Altman now believes AGI (Artificial General Intelligence) might have less impact than expected, even as OpenAI introduces a $200/month subscription for its latest model. Google and Amazon are ramping up their AI efforts, but generative AI still struggles with inaccuracies.
+AI و خزمەتگوزاریەکانی بڵاوکردنەوە گۆڕانکاری زۆرییان کردووە. سام ئالتمن، بەڕێوەبەرە گشتییەکەی OpenAI، ئیتر باوەڕی نییە ئەوەی AGI (زانستی گشتیی ئەندامە گشتییەکان) ئەو کەڵکەی پێشتر هەژمار کراوە دابنێ. هەرواە بەردەوامە بە کاربەرکردنی بەرزکردنەوەیەکە بۆ AI بە نرخێکی مانگانی ٢٠٠ دۆلار.
 
-In streaming, platforms are becoming more like cable. Disney bundled ESPN with Disney Plus, and Max launched always-on HBO channels. Meanwhile, Bitcoin hit $100,000, Spotify Wrapped added an AI podcast, and The Verge launched a new subscription service.
+گووگڵ و ئەمەزوون بەردەوامن بە پاراستنی زانستە بەرزەکان بەرەوپێش بەرین، بەڵام AI یەکان هەیە تا ئێستا کێشەیانی لەناو دڵنیابوون و ڕاستبوونەوە.
 
-Tech and media are changing fast—more to come!
+لە بڵاوکردنەوەدا، تەختەی بڵاوکردنەوە ئەو زانستیانەی داوایان ئەکا قەبارەی تەلەفیزیۆنێکی کەیبیەوە. دیزنەی ئەسپێین لەگەڵ Disney Plus بەردەوامە بە هاوکاتکردن، و ماکس زانیارە هەیە چەناڵە HBO بڵاوکردنەوەکانی بەردەوامە بەرەوپێش بەرین.
+
+لە ئەمەدا، بیتکوین بە نرخێکی ١٠٠٠٠٠ دۆلار گەیشت، Spotify بە هاوکاری AI بڵاوکردنەوەی پۆدکاستە نوێیەکی دا، و The Verge هاوکاریەکەی بۆ خزمەتگوزاری بەشداری نوێ بڵاوکردنەوە کرد.
+
+زانیاریە زانست و بڵاوکردنەوە زۆر گۆڕاوە—لە پاشدا زۆر بەردەوام دەبێت!
 """
 news_image_url = "https://i.imgur.com/38GVvtY.jpg"  # News banner image
 telegram_logo_url = "https://i.imgur.com/Hxr3jCj.png"  # Telegram logo
@@ -29,6 +33,7 @@ st.markdown("""
         body {
             background-color: #f4f4f4;
             font-family: "Arial", sans-serif;
+            direction: rtl;
         }
         .news-container {
             background-color: #ffffff;
@@ -37,6 +42,7 @@ st.markdown("""
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             max-width: 800px;
             margin: 0 auto;
+            direction: rtl;
         }
         .news-title {
             font-size: 36px;
@@ -54,6 +60,7 @@ st.markdown("""
             font-size: 20px;
             line-height: 1.8;
             color: #555555;
+            direction: rtl;
         }
         .share-button {
             display: inline-block;
@@ -103,36 +110,36 @@ st.markdown("""
 query_params = st.experimental_get_query_params()
 if query_params.get("news_id", [None])[0] == news_id:
     # Display the specific news article
-    st.image(news_image_url, use_column_width=True, caption="AI and Streaming: Transforming Industries")
+    st.image(news_image_url, use_column_width=True, caption="AI و بڵاوکردنەوە: نوێترین گۆڕانکاریەکان")
     st.markdown(f"""
         <div class="news-container">
             <div class="news-title">{news_title}</div>
-            <div class="news-subtitle">Latest updates in AI and the streaming world.</div>
+            <div class="news-subtitle">نوێترین زانیاریەکان لە زانستی AI و بڵاوکردنەوە</div>
             <div class="news-content">{news_content}</div>
         </div>
     """, unsafe_allow_html=True)
 else:
     # Display default news content
-    st.image(news_image_url, use_column_width=True, caption="AI and Streaming: Transforming Industries")
+    st.image(news_image_url, use_column_width=True, caption="AI و بڵاوکردنەوە: نوێترین گۆڕانکاریەکان")
     st.markdown(f"""
         <div class="news-container">
             <div class="news-title">{news_title}</div>
-            <div class="news-subtitle">Latest updates in AI and the streaming world.</div>
+            <div class="news-subtitle">نوێترین زانیاریەکان لە زانستی AI و بڵاوکردنەوە</div>
             <div class="news-content">{news_content[:250]}...</div>
         </div>
     """, unsafe_allow_html=True)
     
     # Generate shareable link
     shareable_link = generate_shareable_link(news_id)
-    if st.button("🔗 Read & Share This News", key="share_button", help="Click to generate a shareable link"):
-        st.success("Shareable Link Generated!")
-        st.write("Click the link below to share:")
-        st.markdown(f'<a class="share-button" href="{shareable_link}" target="_blank">Share Now</a>', unsafe_allow_html=True)
+    if st.button("🔗 هاوکاری بکە و هەواڵەکەی بڵاو بکە", key="share_button", help="کرتە بکە بۆ هاوکاری کردن"):
+        st.success("بەستەرەکە دروست کرا!")
+        st.write("کرتە بکە لە بەستەرەکە بۆ هاوکاری:")
+        st.markdown(f'<a class="share-button" href="{shareable_link}" target="_blank">بڵاوکردنەوە</a>', unsafe_allow_html=True)
 
 # Add a footnote with Telegram and contact info
 st.markdown(f"""
     <div class="footnote-container">
-        Follow <strong>Hawkar Ali Abdulhaq</strong> on Telegram: 
+        فەرەی <strong>ھەوکەر علی عبدولحق</strong> لە تێلەگرام:
         <a href="https://t.me/habdulaq" target="_blank"><img src="{telegram_logo_url}" class="telegram-logo"></a>
         <br>
         <a href="https://www.habdulhaq.com" target="_blank">www.habdulhaq.com</a><br>
@@ -143,6 +150,6 @@ st.markdown(f"""
 # Add a footer
 st.markdown("""
     <div class="footer">
-        Powered by <strong>Streamlit</strong> | <a href="https://streamlit.io" target="_blank">Learn More</a>
+        پەروەردەکراو بە <strong>Streamlit</strong> | <a href="https://streamlit.io" target="_blank">فێرببە</a>
     </div>
 """, unsafe_allow_html=True)
