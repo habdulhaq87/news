@@ -1,8 +1,33 @@
 import streamlit as st
 from urllib.parse import urlencode
+import os
 
 # Set up page configuration
 st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
+
+# Helper function to get the correct file path for the font
+def get_static_file_path(file_name):
+    return f"font/{file_name}"
+
+# Serve the Speda font dynamically
+speda_font_path = get_static_file_path("speda.ttf")
+if os.path.exists(speda_font_path):
+    with open(speda_font_path, "rb") as font_file:
+        font_data = font_file.read()
+    st.markdown(
+        f"""
+        <style>
+        @font-face {{
+            font-family: 'Speda';
+            src: url('data:font/ttf;base64,{font_data.decode("latin1")}') format('truetype');
+        }}
+        body {{
+            font-family: 'Speda', Arial, sans-serif;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # Single news article
 news_id = "ai_and_streaming"
@@ -26,89 +51,6 @@ def generate_shareable_link(news_id):
     base_url = "https://q5c32sstqku8zyyrmxtcil.streamlit.app"  # Replace with your Streamlit URL
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
-
-# Add custom CSS for enhanced styling
-st.markdown(f"""
-    <style>
-        @font-face {{
-            font-family: 'Speda';
-            src: url('font/speda.ttf') format('truetype');
-        }}
-        body {{
-            background-color: #f4f4f4;
-            font-family: 'Speda', Arial, sans-serif;
-            direction: rtl;
-        }}
-        .news-container {{
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-            margin: 0 auto;
-            direction: rtl;
-        }}
-        .news-title {{
-            font-size: 36px;
-            font-weight: bold;
-            color: #333333;
-            margin-bottom: 10px;
-        }}
-        .news-subtitle {{
-            font-size: 18px;
-            font-weight: 500;
-            color: #777777;
-            margin-bottom: 20px;
-        }}
-        .news-content {{
-            font-size: 20px;
-            line-height: 1.8;
-            color: #555555;
-            direction: rtl;
-        }}
-        .share-button {{
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-        }}
-        .share-button:hover {{
-            background-color: #0056b3;
-        }}
-        .footer {{
-            text-align: center;
-            margin-top: 50px;
-            font-size: 14px;
-            color: #888888;
-        }}
-        .footer a {{
-            color: #007BFF;
-            text-decoration: none;
-        }}
-        .footer a:hover {{
-            text-decoration: underline;
-        }}
-        .footnote-container {{
-            margin-top: 50px;
-            text-align: center;
-            color: #555555;
-            font-size: 16px;
-            line-height: 1.6;
-        }}
-        .telegram-logo {{
-            width: 24px;
-            height: 24px;
-            vertical-align: middle;
-            margin-right: 8px;
-        }}
-    </style>
-""", unsafe_allow_html=True)
 
 # Check if the app is accessed with a query parameter
 query_params = st.experimental_get_query_params()
