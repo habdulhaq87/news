@@ -3,7 +3,7 @@ import streamlit as st
 
 # Telegram bot token and chat ID
 TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
-TELEGRAM_CHAT_ID = "@habdulaq"  # Replace with your Telegram channel username
+TELEGRAM_CHAT_ID = "@hawkartest"  # Replace with your Telegram channel username
 
 def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
     """
