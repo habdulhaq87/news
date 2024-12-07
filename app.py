@@ -133,8 +133,8 @@ else:
 st.markdown(f"""
     <div class="footnote-container">
         Follow <strong>Hawkar Ali Abdulhaq</strong> on Telegram: 
-        <img src="{telegram_logo_url}" class="telegram-logo">
-        <a href="https://t.me/yourtelegramchannel" target="_blank">Telegram Channel</a><br>
+        <a href="https://t.me/habdulaq" target="_blank"><img src="{telegram_logo_url}" class="telegram-logo"></a>
+        <br>
         <a href="https://www.habdulhaq.com" target="_blank">www.habdulhaq.com</a><br>
         <a href="mailto:connect@habdulhaq.com">connect@habdulhaq.com</a>
     </div>
