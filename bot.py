@@ -1,5 +1,4 @@
 import requests
-import streamlit as st
 
 # Telegram bot token and chat ID
 TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
@@ -18,7 +17,7 @@ def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
         link (str): Link to the full article.
     
     Returns:
-        None
+        bool: True if posted successfully, False otherwise.
     """
     message = f"""
 🌟 **{title}**
@@ -43,8 +42,11 @@ _{subtitle}_
         response = requests.post(telegram_url, data=payload)
         if response.status_code == 200:
             print("Posted successfully to Telegram!")
+            return True
         else:
             print(f"Failed to post to Telegram. Status code: {response.status_code}")
-            print(response.json())
+            print(f"Response: {response.json()}")
+            return False
     except Exception as e:
         print(f"Error posting to Telegram: {e}")
+        return False
