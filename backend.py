@@ -3,19 +3,20 @@ import json
 import os
 import requests
 
-# Constants for GitHub integration
-GITHUB_USER = os.getenv("GITHUB_USER", "habdulhaq87")  # Replace with your GitHub username if not using env vars
-GITHUB_REPO = os.getenv("GITHUB_REPO", "news")         # Replace with your repository name
-GITHUB_PAT = os.getenv("GITHUB_PAT")                  # Personal Access Token (required)
-
+# Paths
 JSON_FILE = "news.json"
 PHOTO_DIR = "photo"
 
-# GitHub API URL for the news.json file
-GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
-
 # Ensure the photo directory exists
 os.makedirs(PHOTO_DIR, exist_ok=True)
+
+# Load GitHub secrets
+GITHUB_USER = "habdulhaq87"
+GITHUB_REPO = "news"
+GITHUB_PAT = st.secrets["github"]["personal_access_token"]
+
+# GitHub API URL for the news.json file
+GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
 
 # Load news data from the JSON file (local)
 def load_news_data():
@@ -31,10 +32,6 @@ def save_news_data_local(news_data):
 
 # Upload news data to GitHub
 def upload_to_github(file_path):
-    if not GITHUB_PAT:
-        st.error("GitHub PAT not found. Please set the GITHUB_PAT environment variable.")
-        return False
-
     # Read file content
     with open(file_path, "r", encoding="utf-8") as file:
         content = file.read()
