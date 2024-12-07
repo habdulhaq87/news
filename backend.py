@@ -2,8 +2,12 @@ import streamlit as st
 import json
 import os
 
-# Path to the JSON file
+# Paths
 JSON_FILE = "news.json"
+PHOTO_DIR = "photo"
+
+# Ensure the photo directory exists
+os.makedirs(PHOTO_DIR, exist_ok=True)
 
 # Load news data from the JSON file
 def load_news_data():
@@ -16,6 +20,13 @@ def load_news_data():
 def save_news_data(news_data):
     with open(JSON_FILE, "w", encoding="utf-8") as file:
         json.dump(news_data, file, ensure_ascii=False, indent=4)
+
+# Save uploaded image to the photo directory
+def save_uploaded_image(uploaded_file):
+    file_path = os.path.join(PHOTO_DIR, uploaded_file.name)
+    with open(file_path, "wb") as file:
+        file.write(uploaded_file.getbuffer())
+    return file_path
 
 # Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")
@@ -36,18 +47,21 @@ with st.form("add_article_form", clear_on_submit=True):
                                 help="Use Markdown syntax for text styling. E.g., **bold**, *italic*, [link](http://example.com)")
     new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway", 
                                  help="Use Markdown syntax for text styling.")
-    new_image_url = st.text_input("Image Path (e.g., photo/1.jpg)", key="new_image_url")
+    uploaded_image = st.file_uploader("Upload Image (jpg, png)", type=["jpg", "png"], key="new_image")
+
     submitted = st.form_submit_button("Add Article")
 
     if submitted:
-        if new_title and new_subtitle and new_content and new_image_url:
+        if new_title and new_subtitle and new_content and uploaded_image:
+            image_path = save_uploaded_image(uploaded_image)
+            relative_path = os.path.relpath(image_path, PHOTO_DIR)  # Save relative path to JSON
             new_article = {
                 "id": new_title.replace(" ", "_").lower(),
                 "title": new_title,
                 "subtitle": new_subtitle,
                 "content": new_content,
                 "takeaway": new_takeaway,
-                "image_url": new_image_url,
+                "image_url": os.path.join(PHOTO_DIR, relative_path),
             }
             news_data.append(new_article)
             save_news_data(news_data)
@@ -63,11 +77,16 @@ for i, article in enumerate(news_data):
         # Display existing details
         edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
         edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
-        edit_content = st.text_area("Content (Markdown supported)", value=article["content"], key=f"edit_content_{i}", 
-                                     help="Use Markdown syntax for text styling. E.g., **bold**, *italic*, [link](http://example.com)")
-        edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}", 
-                                      help="Use Markdown syntax for text styling.")
-        edit_image_url = st.text_input("Image Path", value=article["image_url"], key=f"edit_image_url_{i}")
+        edit_content = st.text_area("Content (Markdown supported)", value=article["content"], key=f"edit_content_{i}")
+        edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
+        current_image = os.path.basename(article["image_url"])
+        st.image(article["image_url"], caption="Current Image", use_column_width=True)
+        uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
+
+        if uploaded_image:
+            image_path = save_uploaded_image(uploaded_image)
+            relative_path = os.path.relpath(image_path, PHOTO_DIR)
+            article["image_url"] = os.path.join(PHOTO_DIR, relative_path)
 
         # Save changes
         if st.button("Save Changes", key=f"save_{i}"):
@@ -77,7 +96,7 @@ for i, article in enumerate(news_data):
                 "subtitle": edit_subtitle,
                 "content": edit_content,
                 "takeaway": edit_takeaway,
-                "image_url": edit_image_url,
+                "image_url": article["image_url"],
             }
             save_news_data(news_data)
             st.success("Article updated successfully!")
