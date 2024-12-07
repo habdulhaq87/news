@@ -5,13 +5,16 @@ from urllib.parse import urlencode
 st.set_page_config(page_title="Instant News", page_icon="📰", layout="centered")
 
 # Single news article
-news_id = "breaking_news"
-news_title = "Breaking News: Instant Pages Achieved!"
+news_id = "ai_and_streaming"
+news_title = "AI and Streaming: Key Updates"
 news_content = """
-With the power of Streamlit and query parameters, instant pages are now possible without external hosting!
-Streamlit allows dynamic content delivery, making it easier to share and consume news instantly.
+AI and streaming services are undergoing big changes. OpenAI’s CEO Sam Altman now believes AGI (Artificial General Intelligence) might have less impact than expected, even as OpenAI introduces a $200/month subscription for its latest model. Google and Amazon are ramping up their AI efforts, but generative AI still struggles with inaccuracies.
+
+In streaming, platforms are becoming more like cable. Disney bundled ESPN with Disney Plus, and Max launched always-on HBO channels. Meanwhile, Bitcoin hit $100,000, Spotify Wrapped added an AI podcast, and The Verge launched a new subscription service.
+
+Tech and media are changing fast—more to come!
 """
-news_image_url = "https://via.placeholder.com/800x400?text=Breaking+News"  # Replace with an actual news-related image
+news_image_url = "https://via.placeholder.com/800x400?text=AI+and+Streaming+Updates"  # Replace with an actual relevant image
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
