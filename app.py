@@ -14,14 +14,11 @@ def load_news_data():
 news_data = load_news_data()
 
 # Helper function to shorten a URL using TinyURL API
-# Helper function to shorten a URL using TinyURL API
 def shorten_url(long_url):
     try:
         response = requests.get(f"http://tinyurl.com/api-create.php?url={long_url}")
         if response.status_code == 200:
-            short_url = response.text.strip()
-            st.write(f"Shortened URL: {short_url}")  # Debugging
-            return short_url
+            return response.text.strip()
         else:
             st.warning(f"TinyURL API failed with status code {response.status_code}. Using the long URL instead.")
             return long_url
@@ -131,10 +128,17 @@ else:
                 <div class="news-content">{news["content"][:250]}...</div>
             </div>
         """, unsafe_allow_html=True)
-        shareable_link = generate_shareable_link(news["id"])
-        if st.button(f"🔗 هاوکاری بکە و بڵاو بکە: {news['title']}", key=news["id"]):
-            st.success("بەستەرەکە دروست کرا!")
-            st.write(f"[کرتە بکە لە بەستەرەکە بۆ هاوکاری]({shareable_link})")
+        short_url = generate_shareable_link(news["id"])
+        st.markdown(f"🔗 [Copy Tiny URL](javascript:void(0);)", unsafe_allow_html=True)
+        st.markdown(f"""
+        <script>
+            function copyToClipboard() {{
+                navigator.clipboard.writeText("{short_url}");
+                alert("Copied: {short_url}");
+            }}
+            document.querySelector("a[href='javascript:void(0);']").addEventListener('click', copyToClipboard);
+        </script>
+        """, unsafe_allow_html=True)
 
 # Footer with contact info
 st.markdown(f"""
