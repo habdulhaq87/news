@@ -1,100 +1,72 @@
-import requests
-import logging
+import streamlit as st
+from streamlit_quill import st_quill
+from bot import post_to_telegram
 
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG, 
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler("telegram_debug.log"), logging.StreamHandler()]
-)
-
-# Telegram bot token and chat ID
-TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
-TELEGRAM_CHAT_ID = "@hawkartest"  # Replace with your Telegram channel username or ID
-
-def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
+def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
     """
-    Post a news article to Telegram with detailed debugging.
-
+    Display and manage articles: edit, delete, and post to Telegram with debugging.
+    
     Args:
-        title (str): Title of the article.
-        subtitle (str): Subtitle of the article.
-        content (str): Content of the article.
-        takeaway (str): Takeaway or key points.
-        image_url (str): URL of the image to post.
-        link (str): Link to the full article.
-
-    Returns:
-        bool: True if posted successfully, False otherwise.
+        news_data (list): List of articles loaded from the JSON file.
+        save_news_data (function): Function to save updated news data back to the JSON file.
+        save_uploaded_image_to_github (function): Function to save uploaded images to GitHub.
     """
-    try:
-        # Create the message body
-        message = f"""
-🌟 **{title}**
-_{subtitle}_
+    st.title("View and Manage Articles")
 
-{content[:200]}... *(Read more in the full article)*
-
-🔗 [Read more]({link})
-
-📌 **Takeaway**:
-{takeaway}
-        """
-        logging.debug("Message constructed for Telegram: %s", message)
-        
-        # Define the payload for the Telegram API
-        payload = {
-            "chat_id": TELEGRAM_CHAT_ID,
-            "photo": image_url,
-            "caption": message,
-            "parse_mode": "Markdown",
-        }
-        logging.debug("Payload constructed: %s", payload)
-        
-        # Construct the Telegram API URL
-        telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-        logging.debug("Telegram API URL: %s", telegram_url)
-        
-        # Send the POST request to Telegram
-        response = requests.post(telegram_url, data=payload)
-        logging.debug("Response received: %s", response.text)
-        
-        # Check the response status
-        if response.status_code == 200:
-            logging.info("Posted successfully to Telegram!")
-            return True
-        else:
-            logging.error(
-                "Failed to post to Telegram. Status code: %d. Response: %s",
-                response.status_code,
-                response.json(),
+    for i, article in enumerate(news_data):
+        st.subheader(f"Article {i+1}: {article['title']}")
+        with st.expander("View / Edit Article"):
+            # Edit article fields
+            edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
+            edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
+            edit_content = st_quill(
+                key=f"edit_content_{i}",
+                value=article["content"]
             )
-            return False
-    except Exception as e:
-        logging.exception("Error posting to Telegram: %s", e)
-        return False
+            edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
+            st.image(article["image_url"], caption="Current Image", use_container_width=True)
+            
+            # Replace image
+            uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
+            if uploaded_image:
+                # Save new image and update the article
+                image_url = save_uploaded_image_to_github(uploaded_image)
+                if image_url:
+                    article["image_url"] = image_url
 
-# Example usage for testing
-if __name__ == "__main__":
-    # Sample article data
-    sample_title = "Test Article Title"
-    sample_subtitle = "A sample subtitle for the article."
-    sample_content = "This is a brief snippet of the article content, highlighting the main points of the news."
-    sample_takeaway = "Key insights or takeaways from the article."
-    sample_image_url = "https://via.placeholder.com/800x400.png"
-    sample_link = "https://example.com/full-article"
+            # Save changes
+            if st.button("Save Changes", key=f"save_{i}"):
+                news_data[i] = {
+                    "id": edit_title.replace(" ", "_").lower(),
+                    "title": edit_title,
+                    "subtitle": edit_subtitle,
+                    "content": edit_content or article["content"],
+                    "takeaway": edit_takeaway,
+                    "image_url": article["image_url"],
+                }
+                save_news_data(news_data)
+                st.success(f"Article '{edit_title}' updated successfully!")
 
-    # Call the function to post to Telegram
-    result = post_to_telegram(
-        title=sample_title,
-        subtitle=sample_subtitle,
-        content=sample_content,
-        takeaway=sample_takeaway,
-        image_url=sample_image_url,
-        link=sample_link,
-    )
+            # Delete article
+            if st.button("Delete Article", key=f"delete_{i}"):
+                del news_data[i]
+                save_news_data(news_data)
+                st.success("Article deleted successfully!")
+                st.experimental_rerun()
 
-    if result:
-        print("Article posted to Telegram successfully.")
-    else:
-        print("Failed to post the article.")
+            # Post article to Telegram
+            if st.button("Post to Telegram", key=f"post_telegram_{i}"):
+                short_url = f"https://habdulhaqnews.streamlit.app/?news_id={article['id']}"
+                success, debug_message = post_to_telegram(
+                    title=article["title"],
+                    subtitle=article["subtitle"],
+                    content=article["content"],
+                    takeaway=article["takeaway"],
+                    image_url=article["image_url"],
+                    link=short_url,
+                )
+                if success:
+                    st.success(f"Article '{article['title']}' posted to Telegram successfully!")
+                else:
+                    st.error(f"Failed to post the article to Telegram.")
+                    st.text_area("Debug Information", debug_message, height=200)
