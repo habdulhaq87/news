@@ -2,6 +2,8 @@ import streamlit as st
 import json
 import os
 import requests
+import base64
+
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"  # Your GitHub username
@@ -29,12 +31,15 @@ def save_news_data_local(news_data):
     with open(JSON_FILE, "w", encoding="utf-8") as file:
         json.dump(news_data, file, ensure_ascii=False, indent=4)
 
-# Upload news data to GitHub
+
 def upload_to_github(file_path):
     # Read file content
     with open(file_path, "r", encoding="utf-8") as file:
         content = file.read()
     
+    # Base64 encode the content
+    base64_content = base64.b64encode(content.encode("utf-8")).decode("utf-8")
+
     # Get the current file SHA (required for updates)
     response = requests.get(GITHUB_API_URL, headers={"Authorization": f"token {GITHUB_PAT}"})
     if response.status_code == 200:
@@ -48,7 +53,7 @@ def upload_to_github(file_path):
     # Prepare the payload
     payload = {
         "message": "Update news.json via Streamlit backend",
-        "content": content.encode("utf-8").decode("utf-8"),  # Base64 encoding handled by GitHub API
+        "content": base64_content,  # Use Base64 encoded content
         "sha": sha
     }
 
