@@ -1,4 +1,12 @@
 import requests
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG, 
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.FileHandler("telegram_debug.log"), logging.StreamHandler()]
+)
 
 # Telegram bot token and chat ID
 TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
@@ -6,7 +14,7 @@ TELEGRAM_CHAT_ID = "@hawkartest"  # Replace with your Telegram channel username 
 
 def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
     """
-    Post a news article to Telegram.
+    Post a news article to Telegram with detailed debugging.
 
     Args:
         title (str): Title of the article.
@@ -19,8 +27,9 @@ def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
     Returns:
         bool: True if posted successfully, False otherwise.
     """
-    # Create the message body
-    message = f"""
+    try:
+        # Create the message body
+        message = f"""
 🌟 **{title}**
 _{subtitle}_
 
@@ -30,31 +39,39 @@ _{subtitle}_
 
 📌 **Takeaway**:
 {takeaway}
-    """
-    
-    # Define the payload for the Telegram API
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "photo": image_url,
-        "caption": message,
-        "parse_mode": "Markdown",
-    }
-    
-    # Construct the Telegram API URL
-    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-    
-    try:
+        """
+        logging.debug("Message constructed for Telegram: %s", message)
+        
+        # Define the payload for the Telegram API
+        payload = {
+            "chat_id": TELEGRAM_CHAT_ID,
+            "photo": image_url,
+            "caption": message,
+            "parse_mode": "Markdown",
+        }
+        logging.debug("Payload constructed: %s", payload)
+        
+        # Construct the Telegram API URL
+        telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+        logging.debug("Telegram API URL: %s", telegram_url)
+        
         # Send the POST request to Telegram
         response = requests.post(telegram_url, data=payload)
+        logging.debug("Response received: %s", response.text)
+        
+        # Check the response status
         if response.status_code == 200:
-            print("Posted successfully to Telegram!")
+            logging.info("Posted successfully to Telegram!")
             return True
         else:
-            print(f"Failed to post to Telegram. Status code: {response.status_code}")
-            print(f"Response: {response.json()}")
+            logging.error(
+                "Failed to post to Telegram. Status code: %d. Response: %s",
+                response.status_code,
+                response.json(),
+            )
             return False
     except Exception as e:
-        print(f"Error posting to Telegram: {e}")
+        logging.exception("Error posting to Telegram: %s", e)
         return False
 
 # Example usage for testing
