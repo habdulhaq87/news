@@ -10,7 +10,7 @@ style_params = {
     "footer_border_color": "#dee2e6",
     "font_family": "Arial, sans-serif",
     "font_size": "16px",
-    "logo_size": "50px",
+    "logo_size": 50,  # Stored as an integer for easier manipulation
 }
 
 
@@ -54,8 +54,8 @@ def apply_styles(params):
                 font-family: {params["font_family"]};
             }}
             .footer-item img {{
-                width: {params["logo_size"]};
-                height: {params["logo_size"]};
+                width: {params["logo_size"]}px;
+                height: {params["logo_size"]}px;
                 display: block;
                 margin: 0 auto;
             }}
@@ -81,7 +81,7 @@ def footer():
     """
     Add a styled footer to the application.
     """
-    st.markdown("""
+    st.markdown(f"""
         <div class="footer-container">
             <!-- Telegram Section -->
             <div class="footer-item">
@@ -94,8 +94,8 @@ def footer():
             <!-- Website Section -->
             <div class="footer-item">
                 <a href="https://www.habdulhaq.com" target="_blank">
-                    <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.jpg" alt="DT Logo" style="display: block; margin: 0 auto; max-width: 50px; height: auto;">
-                    <p style="margin: 0; font-size: 14px; color: #333;">پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
+                    <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.jpg" alt="DT Logo">
+                    <p>پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
                 </a>
             </div>
         </div>
@@ -116,8 +116,10 @@ def style_page():
         style_params["button_color"] = st.color_picker("Button Color", style_params["button_color"])
         style_params["button_hover_color"] = st.color_picker("Button Hover Color", style_params["button_hover_color"])
         style_params["footer_background"] = st.color_picker("Footer Background Color", style_params["footer_background"])
+        style_params["footer_border_color"] = st.color_picker("Footer Border Color", style_params["footer_border_color"])
         style_params["font_family"] = st.selectbox("Font Family", ["Arial, sans-serif", "Courier New, monospace", "Georgia, serif"])
-        style_params["logo_size"] = st.slider("Logo Size (px)", 20, 100, int(style_params["logo_size"].replace("px", "")))
+        style_params["font_size"] = st.selectbox("Font Size", ["14px", "16px", "18px", "20px"])
+        style_params["logo_size"] = st.slider("Logo Size (px)", 20, 100, style_params["logo_size"])
 
         submitted = st.form_submit_button("Apply Changes")
 
