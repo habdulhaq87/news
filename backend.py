@@ -1,15 +1,13 @@
-import streamlit as st
 import json
 import os
 import requests
 import base64
 import time
-from urllib.parse import urlencode
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"
 GITHUB_REPO = "news"
-GITHUB_PAT = st.secrets["github_pat"]
+GITHUB_PAT = os.getenv("GITHUB_PAT")  # Retrieve the GitHub PAT securely
 
 JSON_FILE = "news.json"
 PHOTO_DIR = "photo"
@@ -19,25 +17,8 @@ GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}
 GITHUB_API_URL_PHOTO = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{PHOTO_DIR}"
 
 # Telegram bot token and chat ID
-TELEGRAM_BOT_TOKEN = st.secrets.get("telegram_bot_token", "YOUR_BOT_TOKEN")
-TELEGRAM_CHAT_ID = st.secrets.get("telegram_chat_id", "@YOUR_CHANNEL_USERNAME")
-
-
-# Load existing news data from GitHub
-def load_news_data():
-    response = requests.get(GITHUB_API_URL_JSON, headers={"Authorization": f"token {GITHUB_PAT}"})
-    if response.status_code == 200:
-        content = base64.b64decode(response.json().get("content")).decode("utf-8")
-        return json.loads(content)
-    return []
-
-
-# Save news data to GitHub
-def save_news_data(news_data):
-    with open(JSON_FILE, "w", encoding="utf-8") as file:
-        json.dump(news_data, file, ensure_ascii=False, indent=4)
-    upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
-
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Retrieve the Telegram bot token securely
+TELEGRAM_CHAT_ID = "@habdulaq"  # Replace with your Telegram channel username
 
 # Upload a file to GitHub
 def upload_to_github(file_path, github_path, commit_message):
@@ -62,7 +43,6 @@ def upload_to_github(file_path, github_path, commit_message):
 
     return response.status_code in [200, 201]
 
-
 # Save uploaded image to GitHub and return its GitHub URL
 def save_uploaded_image_to_github(uploaded_file):
     if not uploaded_file:
@@ -80,6 +60,19 @@ def save_uploaded_image_to_github(uploaded_file):
         return f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/{PHOTO_DIR}/{filename}"
     return None
 
+# Load existing news data
+def load_news_data():
+    response = requests.get(GITHUB_API_URL_JSON, headers={"Authorization": f"token {GITHUB_PAT}"})
+    if response.status_code == 200:
+        content = base64.b64decode(response.json().get("content")).decode("utf-8")
+        return json.loads(content)
+    return []
+
+# Save news data to GitHub
+def save_news_data(news_data):
+    with open(JSON_FILE, "w", encoding="utf-8") as file:
+        json.dump(news_data, file, ensure_ascii=False, indent=4)
+    upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via backend")
 
 # Helper function to shorten a URL using TinyURL API
 def shorten_url(long_url):
@@ -87,29 +80,19 @@ def shorten_url(long_url):
         response = requests.get(f"http://tinyurl.com/api-create.php?url={long_url}")
         if response.status_code == 200:
             return response.text.strip()
-        return long_url
     except Exception as e:
         print(f"Error generating short URL: {e}")
-        return long_url
+    return long_url
 
-
-# Helper function to generate a shareable link
+# Generate a shareable link for a news article
 def generate_shareable_link(news_id):
     base_url = "https://habdulhaqnews.streamlit.app"  # Replace with your Streamlit URL
     params = {"news_id": news_id}
     long_url = f"{base_url}?{urlencode(params)}"
     return shorten_url(long_url)
 
-
-# Function to post to Telegram
-def post_to_telegram(news):
-    title = news.get("title", "Untitled")
-    subtitle = news.get("subtitle", "")
-    content = news.get("content", "")
-    takeaway = news.get("takeaway", "")
-    image_url = news.get("image_url", "")
-    link = generate_shareable_link(news.get("id", ""))
-
+# Post a news article to Telegram
+def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
     message = f"""
 🌟 **{title}**
 _{subtitle}_
@@ -121,7 +104,6 @@ _{subtitle}_
 📌 **Takeaway**:
 {takeaway}
     """
-
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "photo": image_url,
@@ -129,19 +111,13 @@ _{subtitle}_
         "parse_mode": "Markdown",
     }
     telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-    try:
-        response = requests.post(telegram_url, data=payload)
-        return response.status_code == 200, response.json()
-    except Exception as e:
-        return False, {"error": str(e)}
+    response = requests.post(telegram_url, data=payload)
 
-
-# Function to handle Telegram posting from app
-def handle_post_to_telegram(news_id):
-    news_data = load_news_data()
-    news_item = next((news for news in news_data if news["id"] == news_id), None)
-    if not news_item:
-        return False, {"error": "News article not found."}
-
-    success, response = post_to_telegram(news_item)
-    return success, response
+    if response.status_code == 200:
+        return {"success": True, "message": "Posted successfully to Telegram!"}
+    else:
+        return {
+            "success": False,
+            "error_code": response.status_code,
+            "error_message": response.json().get("description", "Unknown error")
+        }
