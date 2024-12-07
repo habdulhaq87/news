@@ -55,11 +55,24 @@ st.markdown("""
             margin-bottom: 10px;
         }
 
+        .news-subtitle {
+            font-size: 20px;
+            color: #777777;
+            margin-bottom: 20px;
+        }
+
         .news-content {
             font-size: 20px;
             line-height: 1.8;
             color: #555555;
-            direction: rtl;
+            margin-bottom: 20px;
+        }
+
+        .news-takeaway {
+            font-size: 18px;
+            font-style: italic;
+            color: #007BFF;
+            margin-top: 20px;
         }
 
         .telegram-logo {
@@ -84,7 +97,9 @@ if selected_news:
     st.markdown(f"""
         <div class="news-container">
             <div class="news-title">{selected_news["title"]}</div>
+            <div class="news-subtitle">{selected_news["subtitle"]}</div>
             <div class="news-content">{selected_news["content"]}</div>
+            <div class="news-takeaway">Takeaway: {selected_news["takeaway"]}</div>
         </div>
     """, unsafe_allow_html=True)
 else:
@@ -94,6 +109,7 @@ else:
         st.markdown(f"""
             <div class="news-container">
                 <div class="news-title">{news["title"]}</div>
+                <div class="news-subtitle">{news["subtitle"]}</div>
                 <div class="news-content">{news["content"][:250]}...</div>
             </div>
         """, unsafe_allow_html=True)
