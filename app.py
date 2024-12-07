@@ -120,6 +120,7 @@ if selected_news:
 else:
     # Display all news articles with previews
     for news in news_data:
+        short_url = generate_shareable_link(news["id"])  # Generate the TinyURL
         st.image(news["image_url"], use_column_width=True, caption=news["title"])
         st.markdown(f"""
             <div class="news-container">
@@ -128,17 +129,21 @@ else:
                 <div class="news-content">{news["content"][:250]}...</div>
             </div>
         """, unsafe_allow_html=True)
-        short_url = generate_shareable_link(news["id"])
-        st.markdown(f"🔗 [Copy Tiny URL](javascript:void(0);)", unsafe_allow_html=True)
+
+        # Add "Copy Tiny URL" functionality
         st.markdown(f"""
-        <script>
-            function copyToClipboard() {{
-                navigator.clipboard.writeText("{short_url}");
-                alert("Copied: {short_url}");
-            }}
-            document.querySelector("a[href='javascript:void(0);']").addEventListener('click', copyToClipboard);
-        </script>
+            <button onclick="copyToClipboard('{short_url}')">Copy Tiny URL</button>
+            <script>
+                function copyToClipboard(text) {{
+                    navigator.clipboard.writeText(text).then(() => {{
+                        alert("Copied to clipboard: " + text);
+                    }}).catch(err => {{
+                        console.error("Failed to copy: ", err);
+                    }});
+                }}
+            </script>
         """, unsafe_allow_html=True)
+
 
 # Footer with contact info
 st.markdown(f"""
