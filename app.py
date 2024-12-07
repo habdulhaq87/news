@@ -6,6 +6,10 @@ from urllib.parse import urlencode
 # Set up page configuration
 st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
 
+# Telegram bot token and chat ID
+TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
+TELEGRAM_CHAT_ID = "@habdulhaqbot"  # Replace with your bot's channel username or chat ID
+
 # Load news from the JSON file
 def load_news_data():
     with open("news.json", "r", encoding="utf-8") as file:
@@ -32,6 +36,35 @@ def generate_shareable_link(news_id):
     params = {"news_id": news_id}
     long_url = f"{base_url}?{urlencode(params)}"
     return shorten_url(long_url)
+
+# Function to post to Telegram
+def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
+    message = f"""
+🌟 **{title}**
+_{subtitle}_
+
+{content[:200]}...
+
+🔗 [Read more]({link})
+
+📌 **Takeaway**:
+{takeaway}
+    """
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "caption": message,
+        "photo": image_url,
+        "parse_mode": "Markdown",
+    }
+    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+    try:
+        response = requests.post(telegram_url, data=payload)
+        if response.status_code == 200:
+            st.success("Posted successfully to Telegram!")
+        else:
+            st.error(f"Failed to post to Telegram. Status code: {response.status_code}")
+    except Exception as e:
+        st.error(f"Error posting to Telegram: {e}")
 
 # Add custom CSS for enhanced styling
 st.markdown("""
@@ -99,39 +132,31 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Check if the app is accessed with a query parameter
-query_params = st.experimental_get_query_params()
-selected_news_id = query_params.get("news_id", [None])[0]
-
-# Find the selected news article
-selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
-
-if selected_news:
-    # Display the specific news article
-    st.image(selected_news["image_url"], use_column_width=True, caption=selected_news["title"])
+# Display all news articles with previews
+for news in news_data:
+    short_url = generate_shareable_link(news["id"])  # Generate the TinyURL
+    st.image(news["image_url"], use_column_width=True, caption=news["title"])
     st.markdown(f"""
         <div class="news-container">
-            <div class="news-title">{selected_news["title"]}</div>
-            <div class="news-subtitle">{selected_news["subtitle"]}</div>
-            <div class="news-content">{selected_news["content"]}</div>
-            <div class="news-takeaway"> {selected_news["takeaway"]}</div>
+            <div class="news-title">{news["title"]}</div>
+            <div class="news-subtitle">{news["subtitle"]}</div>
+            <div class="news-content">{news["content"][:250]}...</div>
         </div>
     """, unsafe_allow_html=True)
-else:
-    # Display all news articles with previews
-    for news in news_data:
-        short_url = generate_shareable_link(news["id"])  # Generate the TinyURL
-        st.image(news["image_url"], use_column_width=True, caption=news["title"])
-        st.markdown(f"""
-            <div class="news-container">
-                <div class="news-title">{news["title"]}</div>
-                <div class="news-subtitle">{news["subtitle"]}</div>
-                <div class="news-content">{news["content"][:250]}...</div>
-            </div>
-        """, unsafe_allow_html=True)
 
-        # Display Tiny URL in a read-only text input
-        st.text_input(f"Tiny URL for {news['title']}", value=short_url, key=f"tiny_url_{news['id']}")
+    # Display Tiny URL in a read-only text input
+    st.text_input(f"Tiny URL for {news['title']}", value=short_url, key=f"tiny_url_{news['id']}")
+
+    # Add button to post to Telegram
+    if st.button(f"Post '{news['title']}' to Telegram", key=f"post_{news['id']}"):
+        post_to_telegram(
+            title=news["title"],
+            subtitle=news["subtitle"],
+            content=news["content"],
+            takeaway=news["takeaway"],
+            image_url=news["image_url"],
+            link=short_url,
+        )
 
 # Footer with contact info
 st.markdown(f"""
