@@ -44,8 +44,15 @@ _{subtitle}_
     telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
 
     try:
+        # Post to Telegram
         response = requests.post(telegram_url, data=payload)
-        debug_message = f"Payload: {payload}\nResponse: {response.text}\n"
+        debug_message = (
+            f"Attempting to post to Telegram:\n"
+            f"Chat ID: {TELEGRAM_CHAT_ID}\n"
+            f"Payload: {payload}\n"
+            f"Response Status Code: {response.status_code}\n"
+            f"Response Text: {response.text}\n"
+        )
         
         if response.status_code == 200:
             debug_message += "Success: Article posted to Telegram."
