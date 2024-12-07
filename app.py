@@ -1,6 +1,5 @@
 import streamlit as st
 from urllib.parse import urlencode
-import os
 
 # Set up page configuration
 st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
@@ -28,18 +27,7 @@ def generate_shareable_link(news_id):
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
 
-# Add custom CSS for enhanced styling with custom font and debugging
-font_paths = [
-    "font/Speda-Bold.eot",
-    "font/Speda-Bold.woff",
-    "font/Speda-Bold.ttf",
-    "font/Speda-Bold.svg"
-]
-
-font_files_exist = all(os.path.isfile(path) for path in font_paths)
-if not font_files_exist:
-    st.error("❌ Font files are missing! Ensure all font files (eot, woff, ttf, svg) exist in the 'font/' directory.")
-
+# Add custom CSS for enhanced styling with custom font
 st.markdown("""
     <style>
         @font-face {
@@ -76,23 +64,69 @@ st.markdown("""
             margin-bottom: 10px;
         }
 
+        .news-subtitle {
+            font-size: 18px;
+            font-weight: 500;
+            color: #777777;
+            margin-bottom: 20px;
+        }
+
         .news-content {
             font-size: 20px;
             line-height: 1.8;
             color: #555555;
             direction: rtl;
         }
+
+        .share-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .share-button:hover {
+            background-color: #0056b3;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 14px;
+            color: #888888;
+        }
+
+        .footer a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footnote-container {
+            margin-top: 50px;
+            text-align: center;
+            color: #555555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .telegram-logo {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
     </style>
 """, unsafe_allow_html=True)
-
-# Debugging information
-st.markdown("### Debug Information")
-st.write("Font file existence check:")
-for path in font_paths:
-    if os.path.isfile(path):
-        st.write(f"✅ {path} exists")
-    else:
-        st.write(f"❌ {path} is missing")
 
 # Check if the app is accessed with a query parameter
 query_params = st.experimental_get_query_params()
@@ -101,6 +135,7 @@ if query_params.get("news_id", [None])[0] == news_id:
     st.markdown(f"""
         <div class="news-container">
             <div class="news-title">{news_title}</div>
+            <div class="news-subtitle">نوێترین زانیاریەکان لە زانستی AI و بڵاوکردنەوە</div>
             <div class="news-content">{news_content}</div>
         </div>
     """, unsafe_allow_html=True)
@@ -109,6 +144,7 @@ else:
     st.markdown(f"""
         <div class="news-container">
             <div class="news-title">{news_title}</div>
+            <div class="news-subtitle">نوێترین زانیاریەکان لە زانستی AI و بڵاوکردنەوە</div>
             <div class="news-content">{news_content[:250]}...</div>
         </div>
     """, unsafe_allow_html=True)
