@@ -4,28 +4,18 @@ from urllib.parse import urlencode
 # Set up page configuration
 st.set_page_config(page_title="Instant News", page_icon="⚡", layout="wide")
 
-# Predefined news articles (simulating a database)
-news_storage = {
-    "breaking_news": {
-        "title": "Breaking News: Instant Pages Achieved!",
-        "content": "With the power of Streamlit and query parameters, instant pages are now possible without external hosting!",
-    },
-    "climate_update": {
-        "title": "Climate Update: New Initiatives Announced",
-        "content": "Governments worldwide are joining hands to implement large-scale climate resilience programs, focusing on renewable energy and sustainable infrastructure.",
-    },
-    "tech_innovation": {
-        "title": "Tech Innovation: AI Shapes the Future",
-        "content": "Artificial Intelligence continues to revolutionize industries, from healthcare to finance, promising new levels of efficiency and innovation.",
-    },
-    "health_alert": {
-        "title": "Health Alert: Flu Season Tips",
-        "content": "As flu season approaches, experts advise staying up to date on vaccinations, practicing good hygiene, and maintaining a healthy lifestyle.",
-    },
-    "sports_highlight": {
-        "title": "Sports Highlight: Historic Football Win",
-        "content": "In an unforgettable match, the underdog team triumphed in the final moments, sparking celebrations across the nation.",
-    },
+# News content template
+news_id = "breaking_news"
+news = {
+    "title": "Breaking News: Instant Pages Achieved!",
+    "short_title": "Instant Pages with Streamlit",
+    "photo_url": "https://i.imgur.com/8XXoUSs.png",  # Direct image link
+    "bullets": [
+        "Streamlit now supports creating shareable, instant pages.",
+        "No external hosting is required; everything is dynamic.",
+        "Easily integrate with query parameters to make content shareable.",
+    ],
+    "takeaway": "Streamlit makes content sharing faster and more interactive with minimal setup."
 }
 
 # Helper function to generate a shareable link
@@ -36,23 +26,26 @@ def generate_shareable_link(news_id):
 
 # Check if the app is accessed with a query parameter
 query_params = st.experimental_get_query_params()
-news_id = query_params.get("news_id", [None])[0]
-
-if news_id and news_id in news_storage:
-    # Load the specific news article
-    news = news_storage[news_id]
+if query_params.get("news_id", [None])[0] == news_id:
+    # Display the news using the template
     st.title(news["title"])
-    st.write(news["content"])
+    st.subheader(news["short_title"])
+    st.image(news["photo_url"], use_column_width=True)
+    st.write("### Key Points:")
+    for bullet in news["bullets"]:
+        st.write(f"- {bullet}")
+    st.write("### Takeaway Message:")
+    st.success(news["takeaway"])
 else:
-    # Display default news list
-    st.title("Instant News Dashboard")
-    st.write("Welcome to the Instant News Dashboard. Click on any news below to read and share!")
-
-    for news_id, news in news_storage.items():
-        with st.container():
-            st.subheader(news["title"])
-            st.write(news["content"][:100] + "...")
-            shareable_link = generate_shareable_link(news_id)
-            if st.button(f"Read & Share '{news['title']}'", key=news_id):
-                st.write("Share this link:")
-                st.markdown(f"[{shareable_link}]({shareable_link})")
+    # Display the default news card
+    st.title(news["title"])
+    st.subheader(news["short_title"])
+    st.image(news["photo_url"], use_column_width=True)
+    st.write(news["bullets"][0] + "...")
+    
+    # Generate shareable link
+    shareable_link = generate_shareable_link(news_id)
+    if st.button("Read & Share This News"):
+        st.success("Shareable Link Generated!")
+        st.write("Click the link below to share:")
+        st.markdown(f"[{shareable_link}]({shareable_link})")
