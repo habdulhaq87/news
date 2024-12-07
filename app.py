@@ -14,7 +14,7 @@ news_data = load_news_data()
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
-    base_url = "https://q5c32sstqku8zyyrmxtcil.streamlit.app"  # Replace with your Streamlit URL
+    base_url = st.secrets.get("app_url", "https://your-app.streamlit.app")  # Replace with your Streamlit app URL
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
 
@@ -122,7 +122,7 @@ else:
 # Footer with contact info
 st.markdown(f"""
     <div class="footnote-container">
-        فەرەی <strong>هاوکار علی عبدالحق</strong> لە تێلەگرام:
+        فەرەی <strong>ھەوکەر علی عبدالحق</strong> لە تێلەگرام:
         <a href="https://t.me/habdulaq" target="_blank"><img src="https://i.imgur.com/Hxr3jCj.png" class="telegram-logo"></a>
         <br>
         <a href="https://www.habdulhaq.com" target="_blank">www.habdulhaq.com</a><br>
