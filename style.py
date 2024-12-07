@@ -42,8 +42,8 @@ def apply_styles():
             }
 
             .footer-item img {
-                width: 80px; /* Increased width */
-                height: 80px; /* Increased height */
+                width: 120px; /* Increased width */
+                height: 120px; /* Increased height */
                 margin-bottom: 10px;
             }
 
