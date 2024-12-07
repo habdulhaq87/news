@@ -2,7 +2,7 @@ import requests
 
 # Telegram bot token and chat ID
 TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
-TELEGRAM_CHAT_ID = "@1239693460"  # Replace with your Telegram channel username or ID
+TELEGRAM_CHAT_ID = "@habdulhaq"  # Replace with your Telegram channel username or ID
 
 def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
     """
