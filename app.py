@@ -1,6 +1,5 @@
 import streamlit as st
 import json
-import uuid
 from urllib.parse import urlencode
 
 # Set up page configuration
@@ -13,13 +12,9 @@ def load_news_data():
 
 news_data = load_news_data()
 
-# Helper function to generate a unique ID
-def generate_unique_id():
-    return str(uuid.uuid4())
-
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
-    base_url = st.secrets.get("app_url", "https://your-app.streamlit.app")  # Replace with your Streamlit app URL
+    base_url = "https://hawkarnewsbackend.streamlit.app"  # Replace with your Streamlit URL
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
 
@@ -127,7 +122,7 @@ else:
 # Footer with contact info
 st.markdown(f"""
     <div class="footnote-container">
-        فەرەی <strong>ھەوکەر علی عبدالحق</strong> لە تێلەگرام:
+        فەرەی <strong>ھەوکەر علی عبدولحق</strong> لە تێلەگرام:
         <a href="https://t.me/habdulaq" target="_blank"><img src="https://i.imgur.com/Hxr3jCj.png" class="telegram-logo"></a>
         <br>
         <a href="https://www.habdulhaq.com" target="_blank">www.habdulhaq.com</a><br>
