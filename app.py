@@ -158,7 +158,7 @@ else:
 # Footer with contact info
 st.markdown("""
     <div class="footnote-container">
-        فەرەی <strong>هاوکار علی عبدالحق</strong> لە تێلەگرام:
+        کەناڵی <strong>هاوکار علی عبدالحق</strong> لە تێلەگرام:
         <a href="https://t.me/habdulaq" target="_blank"><img src="https://i.imgur.com/Hxr3jCj.png" class="telegram-logo"></a>
         <br>
         <a href="https://www.habdulhaq.com" target="_blank">www.habdulhaq.com</a><br>
