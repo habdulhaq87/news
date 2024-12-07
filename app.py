@@ -99,7 +99,7 @@ if selected_news:
             <div class="news-title">{selected_news["title"]}</div>
             <div class="news-subtitle">{selected_news["subtitle"]}</div>
             <div class="news-content">{selected_news["content"]}</div>
-            <div class="news-takeaway">*: {selected_news["takeaway"]}</div>
+            <div class="news-takeaway"> {selected_news["takeaway"]}</div>
         </div>
     """, unsafe_allow_html=True)
 else:
