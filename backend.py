@@ -4,14 +4,19 @@ import os
 import requests
 import base64
 import time
+from openai import OpenAI
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"  # Your GitHub username
 GITHUB_REPO = "news"         # Your repository name
 GITHUB_PAT = st.secrets["github_pat"]  # Personal Access Token from Streamlit secrets
+OPENAI_API_KEY = st.secrets["openai_api_key"]  # OpenAI API key
 
 JSON_FILE = "news.json"
 PHOTO_DIR = "photo"
+
+# Initialize OpenAI API
+openai = OpenAI(api_key=OPENAI_API_KEY)
 
 # GitHub API URLs
 GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
@@ -63,7 +68,6 @@ def save_news_data(news_data):
     upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
 
 # Save uploaded image to GitHub
-# Save uploaded image to GitHub and return its GitHub URL
 def save_uploaded_image_to_github(uploaded_file):
     if uploaded_file is None:
         st.error("No file uploaded.")
@@ -90,7 +94,6 @@ def save_uploaded_image_to_github(uploaded_file):
         st.error(f"Failed to save image: {e}")
         return None
 
-
 # Load existing news data
 def load_news_data():
     response = requests.get(GITHUB_API_URL_JSON, headers={"Authorization": f"token {GITHUB_PAT}"})
@@ -102,6 +105,22 @@ def load_news_data():
     else:
         st.error(f"Error loading news data from GitHub: {response.status_code}")
         return []
+
+# Function to get content suggestions
+def get_content_suggestions(content):
+    prompt = f"Suggest an improved version of the following article content:\n\n{content}"
+    try:
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=150,
+            temperature=0.7
+        )
+        suggestions = response.choices[0].text.strip()
+        return suggestions
+    except Exception as e:
+        st.error(f"Error generating suggestions: {e}")
+        return ""
 
 # Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")
@@ -120,6 +139,10 @@ with st.form("add_article_form", clear_on_submit=True):
     new_subtitle = st.text_input("Subtitle", key="new_subtitle")
     new_content = st.text_area("Content (Markdown supported)", key="new_content",
                                 help="Use Markdown syntax for text styling. E.g., **bold**, *italic*, [link](http://example.com)")
+    if st.button("Generate Suggestions"):
+        suggestions = get_content_suggestions(new_content)
+        st.text_area("AI Suggestions", value=suggestions, key="ai_suggestions", height=150)
+
     new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway",
                                  help="Use Markdown syntax for text styling.")
     uploaded_image = st.file_uploader("Upload Image (jpg, png)", type=["jpg", "png"], key="new_image")
@@ -148,10 +171,13 @@ st.header("Manage Existing Articles")
 for i, article in enumerate(news_data):
     st.subheader(f"Article {i+1}: {article['title']}")
     with st.expander("View / Edit Article"):
-        # Display existing details
         edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
         edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
         edit_content = st.text_area("Content (Markdown supported)", value=article["content"], key=f"edit_content_{i}")
+        if st.button(f"Generate Suggestions for Article {i+1}"):
+            suggestions = get_content_suggestions(edit_content)
+            st.text_area(f"AI Suggestions for Article {i+1}", value=suggestions, key=f"ai_suggestions_{i}", height=150)
+
         edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
         st.image(article["image_url"], caption="Current Image", use_column_width=True)
         uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
@@ -161,7 +187,6 @@ for i, article in enumerate(news_data):
             if image_url:
                 article["image_url"] = image_url
 
-        # Save changes
         if st.button("Save Changes", key=f"save_{i}"):
             news_data[i] = {
                 "id": edit_title.replace(" ", "_").lower(),
@@ -172,9 +197,8 @@ for i, article in enumerate(news_data):
                 "image_url": article["image_url"],
             }
             save_news_data(news_data)
-        
-        # Delete article
+
         if st.button("Delete Article", key=f"delete_{i}"):
             del news_data[i]
             save_news_data(news_data)
-            st.experimental_rerun()  # Refresh the app to reflect changes
+            st.experimental_rerun()
