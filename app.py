@@ -22,7 +22,7 @@ news_image_url = "https://i.imgur.com/38GVvtY.jpg"  # News banner image
 telegram_logo_url = "https://i.imgur.com/Hxr3jCj.png"  # Telegram logo
 
 # Helper function to generate a shareable link
-def generate_shareable link(news_id):
+def generate_shareable_link(news_id):
     base_url = "https://q5c32sstqku8zyyrmxtcil.streamlit.app"  # Replace with your Streamlit URL
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
