@@ -134,17 +134,6 @@ with st.form("add_article_form", clear_on_submit=True):
                 news_data.append(new_article)
                 save_news_data(news_data)
                 st.success("Article added successfully!")
-
-                # Post the article to Telegram
-                short_url = f"https://habdulhaqnews.streamlit.app/?news_id={new_article['id']}"
-                post_to_telegram(
-                    title=new_article["title"],
-                    subtitle=new_article["subtitle"],
-                    content=new_article["content"],
-                    takeaway=new_article["takeaway"],
-                    image_url=new_article["image_url"],
-                    link=short_url,
-                )
         else:
             st.error("All fields are required except Takeaway.")
 
@@ -180,3 +169,15 @@ for i, article in enumerate(news_data):
             del news_data[i]
             save_news_data(news_data)
             st.experimental_rerun()
+
+        # Add button to post to Telegram
+        if st.button("Post to Telegram", key=f"post_telegram_{i}"):
+            short_url = f"https://habdulhaqnews.streamlit.app/?news_id={article['id']}"
+            post_to_telegram(
+                title=article["title"],
+                subtitle=article["subtitle"],
+                content=article["content"],
+                takeaway=article["takeaway"],
+                image_url=article["image_url"],
+                link=short_url,
+            )
