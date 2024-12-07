@@ -155,6 +155,3 @@ elif st.session_state["current_page"] == "view":
 # Page: Style Page
 elif st.session_state["current_page"] == "style":
     style_page()
-
-# Add Footer
-footer()
