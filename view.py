@@ -58,7 +58,8 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
                 del news_data[i]
                 save_news_data(news_data)
                 st.success("Article deleted successfully!")
-                st.experimental_rerun()
+                st.experimental_set_query_params(rerun="true")  # Force a page reload using query parameters
+                st.stop()  # Ensure the script stops after updating the query parameters
 
             # Post article to Telegram
             if st.button("Post to Telegram", key=f"post_telegram_{i}"):
