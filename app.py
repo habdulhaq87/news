@@ -1,5 +1,6 @@
 import streamlit as st
 import json
+import requests
 from urllib.parse import urlencode
 
 # Set up page configuration
@@ -12,11 +13,25 @@ def load_news_data():
 
 news_data = load_news_data()
 
+# Helper function to shorten a URL using TinyURL API
+def shorten_url(long_url):
+    try:
+        response = requests.get(f"http://tinyurl.com/api-create.php?url={long_url}")
+        if response.status_code == 200:
+            return response.text
+        else:
+            st.warning("Could not shorten the URL. Using the original link.")
+            return long_url
+    except Exception as e:
+        st.error(f"Error generating short URL: {e}")
+        return long_url
+
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
     base_url = "https://habdulhaqnews.streamlit.app"  # Replace with your Streamlit URL
     params = {"news_id": news_id}
-    return f"{base_url}?{urlencode(params)}"
+    long_url = f"{base_url}?{urlencode(params)}"
+    return shorten_url(long_url)
 
 # Add custom CSS for enhanced styling
 st.markdown("""
@@ -116,8 +131,7 @@ else:
         shareable_link = generate_shareable_link(news["id"])
         if st.button(f"🔗 هاوکاری بکە و بڵاو بکە: {news['title']}", key=news["id"]):
             st.success("بەستەرەکە دروست کرا!")
-            st.write("کرتە بکە لە بەستەرەکە بۆ هاوکاری:")
-            st.markdown(f'<a class="share-button" href="{shareable_link}" target="_blank">بڵاوکردنەوە</a>', unsafe_allow_html=True)
+            st.write(f"[کرتە بکە لە بەستەرەکە بۆ هاوکاری]({shareable_link})")
 
 # Footer with contact info
 st.markdown(f"""
