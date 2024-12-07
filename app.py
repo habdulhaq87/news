@@ -1,14 +1,60 @@
 import streamlit as st
 from urllib.parse import urlencode
 import json
+import os
 
-# Load the news from the JSON file
+# File path for the JSON file
+NEWS_FILE = "news.json"
+
 def load_news():
-    with open("news.json", "r", encoding="utf-8") as file:
-        return json.load(file)
+    """Load the news from the JSON file."""
+    if os.path.exists(NEWS_FILE):
+        with open(NEWS_FILE, "r", encoding="utf-8") as file:
+            return json.load(file)
+    return []
+
+def save_news(news_list):
+    """Save the news list to the JSON file."""
+    with open(NEWS_FILE, "w", encoding="utf-8") as file:
+        json.dump(news_list, file, ensure_ascii=False, indent=4)
+
+# Load existing news
+news_list = load_news()
+
+# Sidebar for adding new articles
+st.sidebar.header("Add a New News Article")
+with st.sidebar.form("add_news_form"):
+    new_id = st.text_input("Unique ID", "")
+    new_title = st.text_input("Title", "")
+    new_subtitle = st.text_input("Subtitle", "")
+    new_content = st.text_area("Content", "")
+    new_takeaway = st.text_input("Takeaway Message", "")
+    new_image_url = st.text_input("Image URL", "")
+    submit_button = st.form_submit_button("Add News")
+
+if submit_button:
+    if new_id and new_title and new_subtitle and new_content and new_takeaway and new_image_url:
+        # Add the new article
+        news_list.insert(0, {
+            "id": new_id,
+            "title": new_title,
+            "subtitle": new_subtitle,
+            "content": new_content,
+            "takeaway": new_takeaway,
+            "image_url": new_image_url
+        })
+        save_news(news_list)
+        st.sidebar.success("✅ News article added successfully!")
+        st.experimental_rerun()  # Refresh the page to load the new article
+    else:
+        st.sidebar.error("❌ All fields are required!")
 
 # Load the latest news article
-news = load_news()[0]
+if news_list:
+    news = news_list[0]
+else:
+    st.error("No news articles available.")
+    st.stop()
 
 # Set up page configuration
 st.set_page_config(page_title=news["title"], page_icon="📰", layout="wide")
@@ -86,7 +132,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Display the article
+# Display the latest article
 st.image(news["image_url"], use_column_width=True, caption=news["subtitle"])
 st.markdown(f"""
     <div class="news-container">
