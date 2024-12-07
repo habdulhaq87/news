@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def apply_styles():
     """
     Apply custom CSS styles for the application.
