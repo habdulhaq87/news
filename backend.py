@@ -4,7 +4,7 @@ import os
 import requests
 import base64
 import time
-from streamlit_quill import st_quill  # Rich text editor
+from urllib.parse import urlencode
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"
@@ -17,6 +17,27 @@ PHOTO_DIR = "photo"
 # GitHub API URLs
 GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
 GITHUB_API_URL_PHOTO = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{PHOTO_DIR}"
+
+# Telegram bot token and chat ID
+TELEGRAM_BOT_TOKEN = st.secrets.get("telegram_bot_token", "YOUR_BOT_TOKEN")
+TELEGRAM_CHAT_ID = st.secrets.get("telegram_chat_id", "@YOUR_CHANNEL_USERNAME")
+
+
+# Load existing news data from GitHub
+def load_news_data():
+    response = requests.get(GITHUB_API_URL_JSON, headers={"Authorization": f"token {GITHUB_PAT}"})
+    if response.status_code == 200:
+        content = base64.b64decode(response.json().get("content")).decode("utf-8")
+        return json.loads(content)
+    return []
+
+
+# Save news data to GitHub
+def save_news_data(news_data):
+    with open(JSON_FILE, "w", encoding="utf-8") as file:
+        json.dump(news_data, file, ensure_ascii=False, indent=4)
+    upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
+
 
 # Upload a file to GitHub
 def upload_to_github(file_path, github_path, commit_message):
@@ -41,6 +62,7 @@ def upload_to_github(file_path, github_path, commit_message):
 
     return response.status_code in [200, 201]
 
+
 # Save uploaded image to GitHub and return its GitHub URL
 def save_uploaded_image_to_github(uploaded_file):
     if not uploaded_file:
@@ -58,112 +80,68 @@ def save_uploaded_image_to_github(uploaded_file):
         return f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/{PHOTO_DIR}/{filename}"
     return None
 
-# Load existing news data
-def load_news_data():
-    response = requests.get(GITHUB_API_URL_JSON, headers={"Authorization": f"token {GITHUB_PAT}"})
-    if response.status_code == 200:
-        content = base64.b64decode(response.json().get("content")).decode("utf-8")
-        return json.loads(content)
-    return []
 
-# Save news data to GitHub
-def save_news_data(news_data):
-    with open(JSON_FILE, "w", encoding="utf-8") as file:
-        json.dump(news_data, file, ensure_ascii=False, indent=4)
-    upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
+# Helper function to shorten a URL using TinyURL API
+def shorten_url(long_url):
+    try:
+        response = requests.get(f"http://tinyurl.com/api-create.php?url={long_url}")
+        if response.status_code == 200:
+            return response.text.strip()
+        return long_url
+    except Exception as e:
+        print(f"Error generating short URL: {e}")
+        return long_url
 
-# AI Suggestions for Writing Content
-def suggest_content(text):
-    api_url = "https://api.openai.com/v1/completions"
-    headers = {
-        "Authorization": f"Bearer {st.secrets['openai_api_key']}",
-        "Content-Type": "application/json"
-    }
+
+# Helper function to generate a shareable link
+def generate_shareable_link(news_id):
+    base_url = "https://habdulhaqnews.streamlit.app"  # Replace with your Streamlit URL
+    params = {"news_id": news_id}
+    long_url = f"{base_url}?{urlencode(params)}"
+    return shorten_url(long_url)
+
+
+# Function to post to Telegram
+def post_to_telegram(news):
+    title = news.get("title", "Untitled")
+    subtitle = news.get("subtitle", "")
+    content = news.get("content", "")
+    takeaway = news.get("takeaway", "")
+    image_url = news.get("image_url", "")
+    link = generate_shareable_link(news.get("id", ""))
+
+    message = f"""
+🌟 **{title}**
+_{subtitle}_
+
+{content[:200]}...
+
+🔗 [Read more]({link})
+
+📌 **Takeaway**:
+{takeaway}
+    """
+
     payload = {
-        "model": "text-davinci-003",
-        "prompt": f"Improve the following content: {text}",
-        "max_tokens": 150,
-        "temperature": 0.7
+        "chat_id": TELEGRAM_CHAT_ID,
+        "photo": image_url,
+        "caption": message,
+        "parse_mode": "Markdown",
     }
-    response = requests.post(api_url, headers=headers, json=payload)
-    if response.status_code == 200:
-        return response.json().get("choices")[0].get("text").strip()
-    return "No suggestions available."
+    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+    try:
+        response = requests.post(telegram_url, data=payload)
+        return response.status_code == 200, response.json()
+    except Exception as e:
+        return False, {"error": str(e)}
 
-# Initialize the Streamlit app
-st.set_page_config(page_title="News Backend", layout="wide")
 
-# Load existing news data
-news_data = load_news_data()
+# Function to handle Telegram posting from app
+def handle_post_to_telegram(news_id):
+    news_data = load_news_data()
+    news_item = next((news for news in news_data if news["id"] == news_id), None)
+    if not news_item:
+        return False, {"error": "News article not found."}
 
-# Header
-st.title("News Backend")
-st.write("Manage your news articles dynamically. Add, edit, or delete articles from the JSON file.")
-
-# Add a new article
-st.header("Add New Article")
-
-# Separate AI suggestions outside the form
-content_for_suggestions = st_quill("Write your content here and get suggestions", key="content_suggestions")
-if st.button("Get Suggestions for Content"):
-    suggestions = suggest_content(content_for_suggestions or "")
-    st.write(f"Suggestions: {suggestions}")
-
-with st.form("add_article_form", clear_on_submit=True):
-    new_title = st.text_input("Title", key="new_title")
-    new_subtitle = st.text_input("Subtitle", key="new_subtitle")
-    new_content = st_quill("Write your content here", key="new_content")  # Initialize blank editor
-    new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway")
-    uploaded_image = st.file_uploader("Upload Image (jpg, png)", type=["jpg", "png"], key="new_image")
-
-    submitted = st.form_submit_button("Add Article")
-
-    if submitted:
-        if new_title and new_subtitle and new_content and uploaded_image:
-            image_url = save_uploaded_image_to_github(uploaded_image)
-            if image_url:
-                new_article = {
-                    "id": new_title.replace(" ", "_").lower(),
-                    "title": new_title,
-                    "subtitle": new_subtitle,
-                    "content": new_content,
-                    "takeaway": new_takeaway,
-                    "image_url": image_url,
-                }
-                news_data.append(new_article)
-                save_news_data(news_data)
-        else:
-            st.error("All fields are required except Takeaway.")
-
-# Edit or delete existing articles
-st.header("Manage Existing Articles")
-for i, article in enumerate(news_data):
-    st.subheader(f"Article {i+1}: {article['title']}")
-    with st.expander("View / Edit Article"):
-        edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
-        edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
-        edit_content = st_quill("Edit your content here", key=f"edit_content_{i}")  # No direct `value`
-        edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
-        st.image(article["image_url"], caption="Current Image", use_container_width=True)
-        uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
-
-        if uploaded_image:
-            image_url = save_uploaded_image_to_github(uploaded_image)
-            if image_url:
-                article["image_url"] = image_url
-
-        if st.button("Save Changes", key=f"save_{i}"):
-            news_data[i] = {
-                "id": edit_title.replace(" ", "_").lower(),
-                "title": edit_title,
-                "subtitle": edit_subtitle,
-                "content": edit_content or article["content"],
-                "takeaway": edit_takeaway,
-                "image_url": article["image_url"],
-            }
-            save_news_data(news_data)
-
-        if st.button("Delete Article", key=f"delete_{i}"):
-            del news_data[i]
-            save_news_data(news_data)
-            st.experimental_rerun()
+    success, response = post_to_telegram(news_item)
+    return success, response
