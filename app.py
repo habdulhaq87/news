@@ -6,10 +6,6 @@ from urllib.parse import urlencode
 # Set up page configuration
 st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
 
-# Telegram bot token and chat ID
-TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
-TELEGRAM_CHAT_ID = "@habdulaq"  # Replace with your Telegram channel username
-
 # Load news from the JSON file
 def load_news_data():
     with open("news.json", "r", encoding="utf-8") as file:
@@ -36,36 +32,6 @@ def generate_shareable_link(news_id):
     params = {"news_id": news_id}
     long_url = f"{base_url}?{urlencode(params)}"
     return shorten_url(long_url)
-
-# Function to post to Telegram
-def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
-    message = f"""
-🌟 **{title}**
-_{subtitle}_
-
-{content[:200]}...
-
-🔗 [Read more]({link})
-
-📌 :
-{takeaway}
-    """
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "photo": image_url,
-        "caption": message,
-        "parse_mode": "Markdown",
-    }
-    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-    try:
-        response = requests.post(telegram_url, data=payload)
-        if response.status_code == 200:
-            st.success("Posted successfully to Telegram!")
-        else:
-            st.error(f"Failed to post to Telegram. Status code: {response.status_code}")
-            st.error(response.json())
-    except Exception as e:
-        st.error(f"Error posting to Telegram: {e}")
 
 # Add custom CSS for enhanced styling
 st.markdown("""
@@ -141,7 +107,7 @@ selected_news_id = query_params.get("news_id", [None])[0]
 if selected_news_id:
     selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
     if selected_news:
-        st.image(selected_news["image_url"], use_column_width=True, caption=selected_news["title"])
+        st.image(selected_news["image_url"], use_container_width=True, caption=selected_news["title"])
         st.markdown(f"""
             <div class="news-container">
                 <div class="news-title">{selected_news["title"]}</div>
