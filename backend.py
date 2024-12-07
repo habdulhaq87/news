@@ -10,13 +10,15 @@ from openai import OpenAI
 GITHUB_USER = "habdulhaq87"  # Your GitHub username
 GITHUB_REPO = "news"         # Your repository name
 GITHUB_PAT = st.secrets["github_pat"]  # Personal Access Token from Streamlit secrets
-OPENAI_API_KEY = st.secrets["openai_api_key"]  # OpenAI API key
 
 JSON_FILE = "news.json"
 PHOTO_DIR = "photo"
 
-# Initialize OpenAI API
-openai = OpenAI(api_key=OPENAI_API_KEY)
+# Initialize OpenAI API client
+client = OpenAI(
+    organization='org-nvMuG1FQBdL8lGyUxYnl8w0a',
+    project='$PROJECT_ID',
+)
 
 # GitHub API URLs
 GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
@@ -106,18 +108,16 @@ def load_news_data():
         st.error(f"Error loading news data from GitHub: {response.status_code}")
         return []
 
-# Function to get content suggestions
+# Function to get content suggestions using your API client
 def get_content_suggestions(content):
-    prompt = f"Suggest an improved version of the following article content:\n\n{content}"
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
+        response = client.completions.create(
+            model="text-davinci-003",
+            prompt=f"Suggest improvements for the following article content:\n\n{content}",
             max_tokens=150,
             temperature=0.7
         )
-        suggestions = response.choices[0].text.strip()
-        return suggestions
+        return response['choices'][0]['text'].strip()
     except Exception as e:
         st.error(f"Error generating suggestions: {e}")
         return ""
