@@ -1,34 +1,17 @@
 import streamlit as st
-import json
 from urllib.parse import urlencode
+import json
 
-# Load news from JSON file
-NEWS_FILE = "news.json"
-
+# Load the news from the JSON file
 def load_news():
-    """Load news articles from the JSON file."""
-    try:
-        with open(NEWS_FILE, "r", encoding="utf-8") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return []
+    with open("news.json", "r", encoding="utf-8") as file:
+        return json.load(file)
 
-# Load all news articles
-news_list = load_news()
+# Load the latest news article
+news = load_news()[0]
 
 # Set up page configuration
-st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
-
-# Display the latest news article
-if news_list:
-    latest_news = news_list[-1]  # Show the latest news first
-    news_title = latest_news["title"]
-    news_subtitle = latest_news["subtitle"]
-    news_content = latest_news["content"]
-    news_takeaway = latest_news["takeaway"]
-    news_image_url = latest_news["image_url"]
-else:
-    st.error("No news articles available. Please add news via `news.py`.")
+st.set_page_config(page_title=news["title"], page_icon="📰", layout="wide")
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
@@ -36,7 +19,7 @@ def generate_shareable_link(news_id):
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
 
-# Add custom CSS for styling
+# Add custom CSS for enhanced styling with custom font
 st.markdown("""
     <style>
         @font-face {
@@ -74,8 +57,9 @@ st.markdown("""
         }
 
         .news-subtitle {
-            font-size: 18px;
-            color: #666666;
+            font-size: 24px;
+            font-weight: 500;
+            color: #555555;
             margin-bottom: 20px;
         }
 
@@ -86,45 +70,45 @@ st.markdown("""
             direction: rtl;
         }
 
+        .telegram-logo {
+            width: 24px;  /* Reduced size */
+            height: 24px; /* Reduced size */
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
         .takeaway {
             font-size: 18px;
             font-style: italic;
-            color: #444444;
-            margin-top: 30px;
-        }
-
-        .telegram-logo {
-            width: 24px;
-            height: 24px;
-            vertical-align: middle;
-            margin-right: 8px;
+            color: #007BFF;
+            margin-top: 20px;
         }
     </style>
 """, unsafe_allow_html=True)
 
-if news_list:
-    st.image(news_image_url, use_column_width=True, caption=news_subtitle)
-    st.markdown(f"""
-        <div class="news-container">
-            <div class="news-title">{news_title}</div>
-            <div class="news-subtitle">{news_subtitle}</div>
-            <div class="news-content">{news_content}</div>
-            <div class="takeaway">📌 {news_takeaway}</div>
-        </div>
-    """, unsafe_allow_html=True)
+# Display the article
+st.image(news["image_url"], use_column_width=True, caption=news["subtitle"])
+st.markdown(f"""
+    <div class="news-container">
+        <div class="news-title">{news["title"]}</div>
+        <div class="news-subtitle">{news["subtitle"]}</div>
+        <div class="news-content">{news["content"]}</div>
+        <div class="takeaway">Takeaway: {news["takeaway"]}</div>
+    </div>
+""", unsafe_allow_html=True)
 
-    # Generate and display shareable link
-    shareable_link = generate_shareable_link(news_id="latest")
-    st.markdown(f"""
-        <div style="margin-top: 20px;">
-            <a class="share-button" href="{shareable_link}" target="_blank">🔗 هاوکاری بکە و هەواڵەکەی بڵاو بکە</a>
-        </div>
-    """, unsafe_allow_html=True)
+# Generate and display the shareable link
+shareable_link = generate_shareable_link(news["id"])
+if st.button("🔗 هاوکاری بکە و هەواڵەکەی بڵاو بکە", key="share_button", help="کرتە بکە بۆ هاوکاری کردن"):
+    st.success("بەستەرەکە دروست کرا!")
+    st.write("کرتە بکە لە بەستەرەکە بۆ هاوکاری:")
+    st.markdown(f'<a class="share-button" href="{shareable_link}" target="_blank">بڵاوکردنەوە</a>', unsafe_allow_html=True)
 
+# Footer with Telegram and contact info
 st.markdown(f"""
     <div class="footnote-container">
         فەرەی <strong>ھەوکەر علی عبدولحق</strong> لە تێلەگرام:
-        <a href="https://t.me/habdulaq" target="_blank"><img src="{telegram_logo_url}" class="telegram-logo"></a>
+        <a href="https://t.me/habdulaq" target="_blank"><img src="https://i.imgur.com/Hxr3jCj.png" class="telegram-logo"></a>
         <br>
         <a href="https://www.habdulhaq.com" target="_blank">www.habdulhaq.com</a><br>
         <a href="mailto:connect@habdulhaq.com">connect@habdulhaq.com</a>
