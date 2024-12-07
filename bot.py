@@ -1,72 +1,29 @@
 import streamlit as st
+import json
+import os
+import requests
+import base64
+import time
 from streamlit_quill import st_quill
-from bot import post_to_telegram  # Import Telegram posting functionality
+from view import view_articles
+from bot import post_to_telegram
 
-def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
-    """
-    Display and manage articles: edit, delete, and post to Telegram.
-    
-    Args:
-        news_data (list): List of articles loaded from the JSON file.
-        save_news_data (function): Function to save updated news data back to the JSON file.
-        save_uploaded_image_to_github (function): Function to save uploaded images to GitHub.
-    """
-    st.title("View and Manage Articles")
+# Your existing backend code...
+# Constants, loading news, GitHub integration, etc.
 
-    for i, article in enumerate(news_data):
-        st.subheader(f"Article {i+1}: {article['title']}")
-        with st.expander("View / Edit Article"):
-            # Edit article fields
-            edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
-            edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
-            edit_content = st_quill(
-                key=f"edit_content_{i}",
-                value=article["content"]
-            )
-            edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
-            st.image(article["image_url"], caption="Current Image", use_container_width=True)
-            
-            # Replace image
-            uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
-            if uploaded_image:
-                # Save new image and update the article
-                image_url = save_uploaded_image_to_github(uploaded_image)
-                if image_url:
-                    article["image_url"] = image_url
+# Sidebar navigation
+st.sidebar.title("Navigation")
+pages = {
+    "Add New Article": "add",
+    "View Articles": "view",
+}
+page_selection = st.sidebar.radio("Go to", list(pages.keys()))
+st.session_state["current_page"] = pages[page_selection]
 
-            # Save changes
-            if st.button("Save Changes", key=f"save_{i}"):
-                news_data[i] = {
-                    "id": edit_title.replace(" ", "_").lower(),
-                    "title": edit_title,
-                    "subtitle": edit_subtitle,
-                    "content": edit_content or article["content"],
-                    "takeaway": edit_takeaway,
-                    "image_url": article["image_url"],
-                }
-                save_news_data(news_data)
-                st.success(f"Article '{edit_title}' updated successfully!")
-
-            # Delete article
-            if st.button("Delete Article", key=f"delete_{i}"):
-                del news_data[i]
-                save_news_data(news_data)
-                st.success("Article deleted successfully!")
-                st.experimental_rerun()
-
-            # Post article to Telegram
-            if st.button("Post to Telegram", key=f"post_telegram_{i}"):
-                short_url = f"https://habdulhaqnews.streamlit.app/?news_id={article['id']}"
-                success, debug_message = post_to_telegram(
-                    title=article["title"],
-                    subtitle=article["subtitle"],
-                    content=article["content"],
-                    takeaway=article["takeaway"],
-                    image_url=article["image_url"],
-                    link=short_url,
-                )
-                if success:
-                    st.success(f"Article '{article['title']}' posted to Telegram successfully!")
-                else:
-                    st.error(f"Failed to post the article to Telegram.")
-                    st.text_area("Debug Information", debug_message, height=200)
+# Page routing
+if st.session_state["current_page"] == "add":
+    # Add new article functionality
+    # Your add article form logic
+    pass
+elif st.session_state["current_page"] == "view":
+    view_articles(news_data, save_news_data, save_uploaded_image_to_github, post_to_telegram)
