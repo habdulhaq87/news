@@ -133,34 +133,30 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Display all news articles with previews
-for news in news_data:
-    short_url = generate_shareable_link(news["id"])  # Generate the TinyURL
-    st.image(news["image_url"], use_column_width=True, caption=news["title"])
-    st.markdown(f"""
-        <div class="news-container">
-            <div class="news-title">{news["title"]}</div>
-            <div class="news-subtitle">{news["subtitle"]}</div>
-            <div class="news-content">{news["content"][:250]}...</div>
-        </div>
-    """, unsafe_allow_html=True)
+# Check if the app is accessed with a query parameter
+query_params = st.experimental_get_query_params()
+selected_news_id = query_params.get("news_id", [None])[0]
 
-    # Display Tiny URL in a read-only text input
-    st.text_input(f"Tiny URL for {news['title']}", value=short_url, key=f"tiny_url_{news['id']}")
-
-    # Add button to post to Telegram
-    if st.button(f"Post '{news['title']}' to Telegram", key=f"post_{news['id']}"):
-        post_to_telegram(
-            title=news["title"],
-            subtitle=news["subtitle"],
-            content=news["content"],
-            takeaway=news["takeaway"],
-            image_url=news["image_url"],
-            link=short_url,
-        )
+# Find and display the specific news article if `news_id` is provided
+if selected_news_id:
+    selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
+    if selected_news:
+        st.image(selected_news["image_url"], use_column_width=True, caption=selected_news["title"])
+        st.markdown(f"""
+            <div class="news-container">
+                <div class="news-title">{selected_news["title"]}</div>
+                <div class="news-subtitle">{selected_news["subtitle"]}</div>
+                <div class="news-content">{selected_news["content"]}</div>
+                <div class="news-takeaway">📌 **Takeaway**: {selected_news["takeaway"]}</div>
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.warning("The specified news article could not be found.")
+else:
+    st.warning("No specific article selected. Please use a valid link.")
 
 # Footer with contact info
-st.markdown(f"""
+st.markdown("""
     <div class="footnote-container">
         فەرەی <strong>هاوکار علی عبدالحق</strong> لە تێلەگرام:
         <a href="https://t.me/habdulaq" target="_blank"><img src="https://i.imgur.com/Hxr3jCj.png" class="telegram-logo"></a>
