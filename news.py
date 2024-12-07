@@ -1,47 +1,121 @@
+import streamlit as st
 import json
-import os
+from urllib.parse import urlencode
 
-# File path for the JSON file
-NEWS_FILE = "news.json"
+# Set up page configuration
+st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
 
-def load_news():
-    """Load the news from the JSON file."""
-    if os.path.exists(NEWS_FILE):
-        with open(NEWS_FILE, "r", encoding="utf-8") as file:
-            return json.load(file)
-    return []
+# Load news from the JSON file
+def load_news_data():
+    with open("news.json", "r", encoding="utf-8") as file:
+        return json.load(file)
 
-def save_news(news_list):
-    """Save the news list to the JSON file."""
-    with open(NEWS_FILE, "w", encoding="utf-8") as file:
-        json.dump(news_list, file, ensure_ascii=False, indent=4)
+news_data = load_news_data()
 
-def add_news():
-    """Prompt the user to add a new article."""
-    print("Add a New News Article")
-    id = input("Enter a unique ID for the article: ")
-    title = input("Enter the news title: ")
-    subtitle = input("Enter the news subtitle: ")
-    content = input("Enter the full news content: ")
-    takeaway = input("Enter the takeaway message: ")
-    image_url = input("Enter the URL of the image: ")
+# Helper function to generate a shareable link
+def generate_shareable_link(news_id):
+    base_url = "https://q5c32sstqku8zyyrmxtcil.streamlit.app"  # Replace with your Streamlit URL
+    params = {"news_id": news_id}
+    return f"{base_url}?{urlencode(params)}"
 
-    # Load the existing news
-    news_list = load_news()
+# Add custom CSS for enhanced styling
+st.markdown("""
+    <style>
+        @font-face {
+            font-family: 'SpedaBold';
+            src: url('font/Speda-Bold.eot');
+            src: url('font/Speda-Bold.eot?#iefix') format('embedded-opentype'),
+                 url('font/Speda-Bold.woff') format('woff'),
+                 url('font/Speda-Bold.ttf') format('truetype'),
+                 url('font/Speda-Bold.svg#SpedaBold') format('svg');
+            font-weight: normal;
+            font-style: normal;
+        }
 
-    # Add the new article
-    news_list.insert(0, {
-        "id": id,
-        "title": title,
-        "subtitle": subtitle,
-        "content": content,
-        "takeaway": takeaway,
-        "image_url": image_url
-    })
+        body {
+            background-color: #f4f4f4;
+            font-family: 'SpedaBold', Arial, sans-serif;
+            direction: rtl;
+        }
 
-    # Save the updated list
-    save_news(news_list)
-    print("✅ News article added successfully!")
+        .news-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            direction: rtl;
+        }
 
-if __name__ == "__main__":
-    add_news()
+        .news-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333333;
+            margin-bottom: 10px;
+        }
+
+        .news-content {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #555555;
+            direction: rtl;
+        }
+
+        .telegram-logo {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Check if the app is accessed with a query parameter
+query_params = st.experimental_get_query_params()
+selected_news_id = query_params.get("news_id", [None])[0]
+
+# Find the selected news article
+selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
+
+if selected_news:
+    # Display the specific news article
+    st.image(selected_news["image_url"], use_column_width=True, caption=selected_news["title"])
+    st.markdown(f"""
+        <div class="news-container">
+            <div class="news-title">{selected_news["title"]}</div>
+            <div class="news-content">{selected_news["content"]}</div>
+        </div>
+    """, unsafe_allow_html=True)
+else:
+    # Display all news articles with previews
+    for news in news_data:
+        st.image(news["image_url"], use_column_width=True, caption=news["title"])
+        st.markdown(f"""
+            <div class="news-container">
+                <div class="news-title">{news["title"]}</div>
+                <div class="news-content">{news["content"][:250]}...</div>
+            </div>
+        """, unsafe_allow_html=True)
+        shareable_link = generate_shareable_link(news["id"])
+        if st.button(f"🔗 هاوکاری بکە و بڵاو بکە: {news['title']}", key=news["id"]):
+            st.success("بەستەرەکە دروست کرا!")
+            st.write("کرتە بکە لە بەستەرەکە بۆ هاوکاری:")
+            st.markdown(f'<a class="share-button" href="{shareable_link}" target="_blank">بڵاوکردنەوە</a>', unsafe_allow_html=True)
+
+# Footer with contact info
+st.markdown(f"""
+    <div class="footnote-container">
+        فەرەی <strong>ھەوکەر علی عبدولحق</strong> لە تێلەگرام:
+        <a href="https://t.me/habdulaq" target="_blank"><img src="https://i.imgur.com/Hxr3jCj.png" class="telegram-logo"></a>
+        <br>
+        <a href="https://www.habdulhaq.com" target="_blank">www.habdulhaq.com</a><br>
+        <a href="mailto:connect@habdulhaq.com">connect@habdulhaq.com</a>
+    </div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <div class="footer">
+        پەروەردەکراو بە <strong>Streamlit</strong> | <a href="https://streamlit.io" target="_blank">فێرببە</a>
+    </div>
+""", unsafe_allow_html=True)
