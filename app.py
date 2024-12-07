@@ -1,34 +1,46 @@
 import streamlit as st
-from urllib.parse import urlencode
+from urllib.parse import urlencode, parse_qs
 
-# Set the page configuration
-st.set_page_config(page_title="Instant News", page_icon="📰", layout="wide")
+# Set up page configuration
+st.set_page_config(page_title="Instant News", page_icon="⚡", layout="wide")
 
-# Get query parameters from the URL
+# Placeholder for stored news (replace with a database in production)
+news_storage = {
+    "breaking_news": {
+        "title": "Breaking News: Instant Pages Achieved!",
+        "content": "With the power of Streamlit and query parameters, instant pages are now possible without external hosting!",
+    },
+    "climate_update": {
+        "title": "Climate Update: New Initiatives Announced",
+        "content": "Governments worldwide are joining hands to implement large-scale climate resilience programs.",
+    },
+}
+
+# Helper function to generate a shareable link
+def generate_shareable_link(news_id):
+    base_url = "https://q5c32sstqku8zyyrmxtcil.streamlit.app"
+    params = {"news_id": news_id}
+    return f"{base_url}?{urlencode(params)}"
+
+# Check if the app is accessed with a query parameter
 query_params = st.experimental_get_query_params()
+news_id = query_params.get("news_id", [None])[0]
 
-# Check if there's a shared article to display
-if "title" in query_params and "content" in query_params:
-    # Display shared news
-    st.title(query_params["title"][0])
-    st.write(query_params["content"][0])
+if news_id and news_id in news_storage:
+    # Load the specific news article
+    news = news_storage[news_id]
+    st.title(news["title"])
+    st.write(news["content"])
 else:
-    # Default news content
-    st.title("Breaking News: Streamlit Makes Sharing Easy!")
-    news_content = """
-    Streamlit has released a new feature allowing users to create dynamic, shareable links.
-    Now, you can easily share your news content and make it appear instantly with minimal effort!
-    """
-    st.write(news_content)
+    # Display default news list
+    st.title("Instant News Dashboard")
+    st.write("Welcome to the Instant News Dashboard. Click on any news below to read and share!")
 
-    # Shareable link generation
-    if st.button("Share this news"):
-        base_url = "https://q5c32sstqku8zyyrmxtcil.streamlit.app"  # Your deployed Streamlit app URL
-        share_params = {
-            "title": "Breaking News: Streamlit Makes Sharing Easy!",
-            "content": news_content,
-        }
-        share_url = f"{base_url}?{urlencode(share_params)}"
-        st.success("Shareable Link Generated!")
-        st.write("Click the link below to share:")
-        st.markdown(f"[{share_url}]({share_url})")
+    for news_id, news in news_storage.items():
+        with st.container():
+            st.subheader(news["title"])
+            st.write(news["content"][:100] + "...")
+            shareable_link = generate_shareable_link(news_id)
+            if st.button(f"Read & Share '{news['title']}'", key=news_id):
+                st.write("Share this link:")
+                st.markdown(f"[{shareable_link}]({shareable_link})")
