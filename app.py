@@ -130,10 +130,8 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-        # Add "Copy Tiny URL" functionality using Streamlit Clipboard
-        st.text_input(f"Tiny URL for {news['title']}", value=short_url, key=f"tiny_url_{news['id']}")
-        if st.button(f"Copy Tiny URL for {news['title']}", key=f"copy_btn_{news['id']}"):
-            st.success(f"Copied to clipboard: {short_url}")
+        # Display Tiny URL below the news title
+        st.text_input(f"Tiny URL for {news['title']}", value=short_url, key=f"tiny_url_{news['id']}", disabled=True)
 
 # Footer with contact info
 st.markdown(f"""
