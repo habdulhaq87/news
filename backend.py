@@ -1,3 +1,4 @@
+import streamlit as st
 import json
 import os
 import requests
@@ -7,18 +8,18 @@ import time
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"
 GITHUB_REPO = "news"
-GITHUB_PAT = os.getenv("GITHUB_PAT")  # Retrieve the GitHub PAT securely
+GITHUB_PAT = st.secrets["github_pat"]
 
 JSON_FILE = "news.json"
 PHOTO_DIR = "photo"
 
+# Telegram bot token and chat ID
+TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
+TELEGRAM_CHAT_ID = "@habdulaq"
+
 # GitHub API URLs
 GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
 GITHUB_API_URL_PHOTO = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{PHOTO_DIR}"
-
-# Telegram bot token and chat ID
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Retrieve the Telegram bot token securely
-TELEGRAM_CHAT_ID = "@habdulaq"  # Replace with your Telegram channel username
 
 # Upload a file to GitHub
 def upload_to_github(file_path, github_path, commit_message):
@@ -72,27 +73,17 @@ def load_news_data():
 def save_news_data(news_data):
     with open(JSON_FILE, "w", encoding="utf-8") as file:
         json.dump(news_data, file, ensure_ascii=False, indent=4)
-    upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via backend")
+    upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
 
-# Helper function to shorten a URL using TinyURL API
-def shorten_url(long_url):
-    try:
-        response = requests.get(f"http://tinyurl.com/api-create.php?url={long_url}")
-        if response.status_code == 200:
-            return response.text.strip()
-    except Exception as e:
-        print(f"Error generating short URL: {e}")
-    return long_url
+# Function to post to Telegram
+def post_to_telegram(article):
+    title = article["title"]
+    subtitle = article["subtitle"]
+    content = article["content"]
+    takeaway = article["takeaway"]
+    image_url = article["image_url"]
+    link = article.get("short_url", "")
 
-# Generate a shareable link for a news article
-def generate_shareable_link(news_id):
-    base_url = "https://habdulhaqnews.streamlit.app"  # Replace with your Streamlit URL
-    params = {"news_id": news_id}
-    long_url = f"{base_url}?{urlencode(params)}"
-    return shorten_url(long_url)
-
-# Post a news article to Telegram
-def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
     message = f"""
 🌟 **{title}**
 _{subtitle}_
@@ -111,13 +102,36 @@ _{subtitle}_
         "parse_mode": "Markdown",
     }
     telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-    response = requests.post(telegram_url, data=payload)
+    try:
+        response = requests.post(telegram_url, data=payload)
+        if response.status_code == 200:
+            st.success(f"Posted successfully to Telegram: {title}")
+        else:
+            st.error(f"Failed to post to Telegram. Status code: {response.status_code}")
+            st.error(response.json())
+    except Exception as e:
+        st.error(f"Error posting to Telegram: {e}")
 
-    if response.status_code == 200:
-        return {"success": True, "message": "Posted successfully to Telegram!"}
-    else:
-        return {
-            "success": False,
-            "error_code": response.status_code,
-            "error_message": response.json().get("description", "Unknown error")
-        }
+# Initialize the Streamlit backend app
+st.set_page_config(page_title="News Backend", layout="wide")
+
+# Load existing news data
+news_data = load_news_data()
+
+# Header
+st.title("News Backend")
+st.write("Manage your news articles dynamically. Add, edit, delete, or post articles to Telegram.")
+
+# Manage existing articles with Telegram posting option
+st.header("Manage Articles")
+for i, article in enumerate(news_data):
+    st.subheader(f"Article {i+1}: {article['title']}")
+    with st.expander("View / Edit / Post Article"):
+        st.write(f"**Subtitle:** {article['subtitle']}")
+        st.write(f"**Content:** {article['content']}")
+        st.write(f"**Takeaway:** {article['takeaway']}")
+        st.image(article["image_url"], caption="Article Image", use_container_width=True)
+
+        # Add button to post to Telegram
+        if st.button(f"Post '{article['title']}' to Telegram", key=f"post_{i}"):
+            post_to_telegram(article)
