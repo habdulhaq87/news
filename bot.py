@@ -19,6 +19,10 @@ def post_to_telegram(title, subtitle, content, takeaway, image_url, link):
     Returns:
         tuple: (bool, str) - Success status and debug message.
     """
+    # Validate the image URL
+    if not (image_url.startswith("http://") or image_url.startswith("https://")):
+        return False, f"Invalid image URL: {image_url}. It must be an HTTP/HTTPS URL."
+
     message = f"""
 🌟 **{title}**
 _{subtitle}_
