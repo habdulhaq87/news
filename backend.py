@@ -8,6 +8,7 @@ from streamlit_quill import st_quill  # Rich text editor
 from view import view_articles  # Import view_articles function
 from bot import post_to_telegram  # Import Telegram posting functionality
 from style import apply_styles, footer  # Import styles and footer functions
+from style_page import style_page  # Import style management page
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"
@@ -83,6 +84,27 @@ apply_styles()
 
 # Sidebar Navigation as Buttons
 st.sidebar.title("Navigation")
+st.sidebar.markdown(
+    """
+    <style>
+        .stButton>button {
+            background-color: #007BFF;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            padding: 8px 16px;
+            margin: 4px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .stButton>button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 if "current_page" not in st.session_state:
     st.session_state["current_page"] = "view"  # Default page
 
@@ -90,6 +112,8 @@ if st.sidebar.button("Add New Article"):
     st.session_state["current_page"] = "add"
 if st.sidebar.button("View Articles"):
     st.session_state["current_page"] = "view"
+if st.sidebar.button("Style Page"):
+    st.session_state["current_page"] = "style"
 
 # Load existing news data
 news_data = load_news_data()
@@ -127,6 +151,10 @@ if st.session_state["current_page"] == "add":
 # Page: View Articles
 elif st.session_state["current_page"] == "view":
     view_articles(news_data, save_news_data, save_uploaded_image_to_github, post_to_telegram)
+
+# Page: Style Page
+elif st.session_state["current_page"] == "style":
+    style_page()
 
 # Add Footer
 footer()
