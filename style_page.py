@@ -81,7 +81,7 @@ def footer():
     """
     Add a styled footer to the application.
     """
-    st.markdown(f"""
+    st.markdown("""
         <div class="footer-container">
             <!-- Telegram Section -->
             <div class="footer-item">
@@ -94,8 +94,8 @@ def footer():
             <!-- Website Section -->
             <div class="footer-item">
                 <a href="https://www.habdulhaq.com" target="_blank">
-                    <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.jpg" alt="DT Logo">
-                    <p>پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
+                    <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.jpg" alt="DT Logo" style="display: block; margin: 0 auto; max-width: 50px; height: auto;">
+                    <p style="margin: 0; font-size: 14px; color: #333;">پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
                 </a>
             </div>
         </div>
