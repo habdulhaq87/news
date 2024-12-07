@@ -8,7 +8,7 @@ st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="w
 
 # Telegram bot token and chat ID
 TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
-TELEGRAM_CHANNEL_ID = "@habdulaq"  # Replace with your actual channel username
+TELEGRAM_CHAT_ID = "@habdulaq"  # Replace with your Telegram channel username
 
 # Load news from the JSON file
 def load_news_data():
