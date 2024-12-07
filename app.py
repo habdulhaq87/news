@@ -2,7 +2,7 @@ import streamlit as st
 from urllib.parse import urlencode
 
 # Set up page configuration
-st.set_page_config(page_title="Instant News", page_icon="📰", layout="centered")
+st.set_page_config(page_title="Instant News", page_icon="📰", layout="wide")
 
 # Single news article
 news_id = "ai_and_streaming"
@@ -14,7 +14,7 @@ In streaming, platforms are becoming more like cable. Disney bundled ESPN with D
 
 Tech and media are changing fast—more to come!
 """
-news_image_url = "https://i.imgur.com/38GVvtY.jpg"  # Provided image link
+news_image_url = "https://i.imgur.com/38GVvtY.jpg"  # News banner image
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
@@ -22,27 +22,65 @@ def generate_shareable_link(news_id):
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
 
-# Add custom CSS for better styling
+# Add custom CSS for enhanced styling
 st.markdown("""
     <style>
+        body {
+            background-color: #f4f4f4;
+            font-family: "Arial", sans-serif;
+        }
         .news-container {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
         }
         .news-title {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
             color: #333333;
+            margin-bottom: 10px;
+        }
+        .news-subtitle {
+            font-size: 18px;
+            font-weight: 500;
+            color: #777777;
+            margin-bottom: 20px;
         }
         .news-content {
-            font-size: 18px;
-            line-height: 1.6;
+            font-size: 20px;
+            line-height: 1.8;
             color: #555555;
         }
         .share-button {
+            display: inline-block;
             margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .share-button:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 14px;
+            color: #888888;
+        }
+        .footer a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -51,26 +89,35 @@ st.markdown("""
 query_params = st.experimental_get_query_params()
 if query_params.get("news_id", [None])[0] == news_id:
     # Display the specific news article
-    st.image(news_image_url, use_column_width=True)
-    st.markdown(f"<div class='news-container'><div class='news-title'>{news_title}</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='news-content'>{news_content}</div></div>", unsafe_allow_html=True)
+    st.image(news_image_url, use_column_width=True, caption="AI and Streaming: Transforming Industries")
+    st.markdown(f"""
+        <div class="news-container">
+            <div class="news-title">{news_title}</div>
+            <div class="news-subtitle">Latest updates in AI and the streaming world.</div>
+            <div class="news-content">{news_content}</div>
+        </div>
+    """, unsafe_allow_html=True)
 else:
-    # Display default news content with improved UI
-    st.image(news_image_url, use_column_width=True)
-    st.markdown(f"<div class='news-container'><div class='news-title'>{news_title}</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='news-content'>{news_content[:150]}...</div></div>", unsafe_allow_html=True)
+    # Display default news content
+    st.image(news_image_url, use_column_width=True, caption="AI and Streaming: Transforming Industries")
+    st.markdown(f"""
+        <div class="news-container">
+            <div class="news-title">{news_title}</div>
+            <div class="news-subtitle">Latest updates in AI and the streaming world.</div>
+            <div class="news-content">{news_content[:250]}...</div>
+        </div>
+    """, unsafe_allow_html=True)
     
     # Generate shareable link
     shareable_link = generate_shareable_link(news_id)
     if st.button("🔗 Read & Share This News", key="share_button", help="Click to generate a shareable link"):
         st.success("Shareable Link Generated!")
         st.write("Click the link below to share:")
-        st.markdown(f"[{shareable_link}]({shareable_link})")
+        st.markdown(f'<a class="share-button" href="{shareable_link}" target="_blank">Share Now</a>', unsafe_allow_html=True)
 
-# Add a footer for branding or additional links
+# Add a footer
 st.markdown("""
-    <hr>
-    <div style='text-align: center; font-size: 14px; color: #888888;'>
+    <div class="footer">
         Powered by <strong>Streamlit</strong> | <a href="https://streamlit.io" target="_blank">Learn More</a>
     </div>
 """, unsafe_allow_html=True)
