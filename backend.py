@@ -32,8 +32,10 @@ st.header("Add New Article")
 with st.form("add_article_form", clear_on_submit=True):
     new_title = st.text_input("Title", key="new_title")
     new_subtitle = st.text_input("Subtitle", key="new_subtitle")
-    new_content = st.text_area("Content", key="new_content")
-    new_takeaway = st.text_area("Takeaway", key="new_takeaway")
+    new_content = st.text_area("Content (Markdown supported)", key="new_content", 
+                                help="Use Markdown syntax for text styling. E.g., **bold**, *italic*, [link](http://example.com)")
+    new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway", 
+                                 help="Use Markdown syntax for text styling.")
     new_image_url = st.text_input("Image Path (e.g., photo/1.jpg)", key="new_image_url")
     submitted = st.form_submit_button("Add Article")
 
@@ -61,8 +63,10 @@ for i, article in enumerate(news_data):
         # Display existing details
         edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
         edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
-        edit_content = st.text_area("Content", value=article["content"], key=f"edit_content_{i}")
-        edit_takeaway = st.text_area("Takeaway", value=article["takeaway"], key=f"edit_takeaway_{i}")
+        edit_content = st.text_area("Content (Markdown supported)", value=article["content"], key=f"edit_content_{i}", 
+                                     help="Use Markdown syntax for text styling. E.g., **bold**, *italic*, [link](http://example.com)")
+        edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}", 
+                                      help="Use Markdown syntax for text styling.")
         edit_image_url = st.text_input("Image Path", value=article["image_url"], key=f"edit_image_url_{i}")
 
         # Save changes
