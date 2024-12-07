@@ -14,7 +14,7 @@ news_data = load_news_data()
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
-    base_url = "https://hawkarnewsbackend.streamlit.app"  # Replace with your Streamlit URL
+    base_url = "https://habdulhaqnews.streamlit.app"  # Replace with your Streamlit URL
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
 
