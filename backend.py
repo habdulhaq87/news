@@ -77,18 +77,21 @@ def save_news_data(news_data):
 # Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")
 
-# Sidebar Navigation
+# Sidebar Navigation as Buttons
 st.sidebar.title("Navigation")
-navigation = st.sidebar.radio(
-    "Select Page",
-    options=["Add New Article", "View Articles"]
-)
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = "view"  # Default page
+
+if st.sidebar.button("Add New Article"):
+    st.session_state["current_page"] = "add"
+if st.sidebar.button("View Articles"):
+    st.session_state["current_page"] = "view"
 
 # Load existing news data
 news_data = load_news_data()
 
 # Page: Add New Article
-if navigation == "Add New Article":
+if st.session_state["current_page"] == "add":
     st.title("Add New Article")
     with st.form("add_article_form", clear_on_submit=True):
         new_title = st.text_input("Title", key="new_title")
@@ -118,5 +121,5 @@ if navigation == "Add New Article":
                 st.error("All fields are required except Takeaway.")
 
 # Page: View Articles
-elif navigation == "View Articles":
+elif st.session_state["current_page"] == "view":
     view_articles(news_data, save_news_data, save_uploaded_image_to_github, post_to_telegram)
