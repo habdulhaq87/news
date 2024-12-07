@@ -144,7 +144,7 @@ for i, article in enumerate(news_data):
         edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
         edit_content = st_quill("Edit your content here", key=f"edit_content_{i}")  # No direct `value`
         edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
-        st.image(article["image_url"], caption="Current Image", use_column_width=True)
+        st.image(article["image_url"], caption="Current Image", use_container_width=True)
         uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
 
         if uploaded_image:
