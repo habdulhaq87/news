@@ -20,7 +20,7 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
             edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
             edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
             
-            # Correct implementation of st_quill
+            # Use st_quill for rich-text content editing
             edit_content = st_quill(
                 key=f"edit_content_{i}",
                 value=article["content"]  # Provide initial content
@@ -64,7 +64,7 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
             # Post article to Telegram
             if st.button("Post to Telegram", key=f"post_telegram_{i}"):
                 short_url = f"https://habdulhaqnews.streamlit.app/?news_id={article['id']}"
-                post_to_telegram(
+                success = post_to_telegram(
                     title=article["title"],
                     subtitle=article["subtitle"],
                     content=article["content"],
@@ -72,3 +72,7 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
                     image_url=article["image_url"],
                     link=short_url,
                 )
+                if success:
+                    st.success("Article posted to Telegram successfully!")
+                else:
+                    st.error("Failed to post the article to Telegram.")
