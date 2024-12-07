@@ -52,8 +52,8 @@ _{subtitle}_
     """
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
-        "caption": message,
         "photo": image_url,
+        "caption": message,
         "parse_mode": "Markdown",
     }
     telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
@@ -63,6 +63,7 @@ _{subtitle}_
             st.success("Posted successfully to Telegram!")
         else:
             st.error(f"Failed to post to Telegram. Status code: {response.status_code}")
+            st.error(response.json())
     except Exception as e:
         st.error(f"Error posting to Telegram: {e}")
 
