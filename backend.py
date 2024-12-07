@@ -102,17 +102,19 @@ st.write("Manage your news articles dynamically. Add, edit, or delete articles f
 
 # Add a new article
 st.header("Add New Article")
+
+# Separate AI suggestions outside the form
+content_for_suggestions = st_quill("Write your content here and get suggestions", key="content_suggestions")
+if st.button("Get Suggestions for Content"):
+    suggestions = suggest_content(content_for_suggestions)
+    st.write(f"Suggestions: {suggestions}")
+
 with st.form("add_article_form", clear_on_submit=True):
     new_title = st.text_input("Title", key="new_title")
     new_subtitle = st.text_input("Subtitle", key="new_subtitle")
     new_content = st_quill("Write your content here", key="new_content")  # Rich text editor
     new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway")
     uploaded_image = st.file_uploader("Upload Image (jpg, png)", type=["jpg", "png"], key="new_image")
-
-    # AI Suggestions
-    if st.button("Get Suggestions for Content"):
-        suggestions = suggest_content(new_content)
-        st.write(f"Suggestions: {suggestions}")
 
     submitted = st.form_submit_button("Add Article")
 
