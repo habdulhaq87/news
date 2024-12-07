@@ -63,6 +63,7 @@ def save_news_data(news_data):
     upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
 
 # Save uploaded image to GitHub
+# Save uploaded image to GitHub and return its GitHub URL
 def save_uploaded_image_to_github(uploaded_file):
     if uploaded_file is None:
         st.error("No file uploaded.")
@@ -81,12 +82,14 @@ def save_uploaded_image_to_github(uploaded_file):
         # Upload the file to GitHub
         github_path = f"{GITHUB_API_URL_PHOTO}/{filename}"
         if upload_to_github(file_path, github_path, f"Add image {filename}"):
-            return f"{PHOTO_DIR}/{filename}"  # Relative path for JSON
+            # Construct the GitHub raw URL
+            return f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/{PHOTO_DIR}/{filename}"
         else:
             return None
     except Exception as e:
         st.error(f"Failed to save image: {e}")
         return None
+
 
 # Load existing news data
 def load_news_data():
