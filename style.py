@@ -1,7 +1,6 @@
 import streamlit as st
 
 
-@st.cache_data
 def apply_styles():
     """
     Apply custom CSS styles for the application.
@@ -62,13 +61,6 @@ def apply_styles():
                 margin-top: 20px;
             }
 
-            .telegram-logo {
-                width: 24px;
-                height: 24px;
-                vertical-align: middle;
-                margin-right: 8px;
-            }
-
             .footer-container {
                 background-color: #f8f9fa;
                 padding: 20px 0;
@@ -112,7 +104,6 @@ def apply_styles():
     """, unsafe_allow_html=True)
 
 
-@st.cache_resource
 def footer():
     """
     Add a styled footer to the application.
@@ -144,7 +135,7 @@ def style_page():
     """
     st.title("Manage Application Styles")
     st.write("Here you can update the styles and preview how the app looks.")
-    
+
     st.markdown("""
         <div style="padding: 20px; border: 2px solid #dee2e6; background-color: #f8f9fa;">
             <h3>Preview Footer</h3>
