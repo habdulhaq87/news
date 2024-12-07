@@ -11,7 +11,7 @@ GITHUB_REPO = "news"         # Your repository name
 GITHUB_PAT = st.secrets["github_pat"]  # Personal Access Token from Streamlit secrets
 
 JSON_FILE = "news.json"
-PHOTO_DIR = "photo"
+PHOTO_DIR = os.path.abspath("photo")  # Use absolute path for the photo directory
 
 # GitHub API URL for the news.json file
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
