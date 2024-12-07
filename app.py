@@ -72,8 +72,8 @@ st.markdown("""
         }
 
         .telegram-logo {
-            width: 16px;  /* Reduced size */
-            height: 16px; /* Reduced size */
+            width: 24px;  /* Reduced size */
+            height: 24px; /* Reduced size */
             vertical-align: middle;
             margin-right: 8px;
         }
