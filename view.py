@@ -23,7 +23,7 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
             # Correct implementation of st_quill
             edit_content = st_quill(
                 key=f"edit_content_{i}",
-                default=article["content"]  # Provide default content
+                value=article["content"]  # Provide initial content
             )
             
             edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
