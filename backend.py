@@ -76,84 +76,92 @@ def save_news_data(news_data):
 # Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")
 
+# Sidebar Navigation
+st.sidebar.title("Navigation")
+if st.sidebar.button("Add New Article"):
+    st.session_state["current_page"] = "add"
+if st.sidebar.button("View Articles"):
+    st.session_state["current_page"] = "view"
+
+# Set default page to "view articles"
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = "view"
+
 # Load existing news data
 news_data = load_news_data()
 
-# Header
-st.title("News Backend")
-st.write("Manage your news articles dynamically. Add, edit, delete, or post articles to Telegram.")
+# Page: Add New Article
+if st.session_state["current_page"] == "add":
+    st.title("Add New Article")
+    with st.form("add_article_form", clear_on_submit=True):
+        new_title = st.text_input("Title", key="new_title")
+        new_subtitle = st.text_input("Subtitle", key="new_subtitle")
+        new_content = st_quill("Write your content here", key="new_content")  # Initialize blank editor
+        new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway")
+        uploaded_image = st.file_uploader("Upload Image (jpg, png)", type=["jpg", "png"], key="new_image")
 
-# Add a new article
-st.header("Add New Article")
+        submitted = st.form_submit_button("Add Article")
 
-with st.form("add_article_form", clear_on_submit=True):
-    new_title = st.text_input("Title", key="new_title")
-    new_subtitle = st.text_input("Subtitle", key="new_subtitle")
-    new_content = st_quill("Write your content here", key="new_content")  # Initialize blank editor
-    new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway")
-    uploaded_image = st.file_uploader("Upload Image (jpg, png)", type=["jpg", "png"], key="new_image")
+        if submitted:
+            if new_title and new_subtitle and new_content and uploaded_image:
+                image_url = save_uploaded_image_to_github(uploaded_image)
+                if image_url:
+                    new_article = {
+                        "id": new_title.replace(" ", "_").lower(),
+                        "title": new_title,
+                        "subtitle": new_subtitle,
+                        "content": new_content,
+                        "takeaway": new_takeaway,
+                        "image_url": image_url,
+                    }
+                    news_data.append(new_article)
+                    save_news_data(news_data)
+                    st.success("Article added successfully!")
+            else:
+                st.error("All fields are required except Takeaway.")
 
-    submitted = st.form_submit_button("Add Article")
+# Page: View Articles
+elif st.session_state["current_page"] == "view":
+    st.title("View and Manage Articles")
+    for i, article in enumerate(news_data):
+        st.subheader(f"Article {i+1}: {article['title']}")
+        with st.expander("View / Edit Article"):
+            edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
+            edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
+            edit_content = st_quill("Edit your content here", key=f"edit_content_{i}")  # No direct `value`
+            edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
+            st.image(article["image_url"], caption="Current Image", use_container_width=True)
+            uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
 
-    if submitted:
-        if new_title and new_subtitle and new_content and uploaded_image:
-            image_url = save_uploaded_image_to_github(uploaded_image)
-            if image_url:
-                new_article = {
-                    "id": new_title.replace(" ", "_").lower(),
-                    "title": new_title,
-                    "subtitle": new_subtitle,
-                    "content": new_content,
-                    "takeaway": new_takeaway,
-                    "image_url": image_url,
+            if uploaded_image:
+                image_url = save_uploaded_image_to_github(uploaded_image)
+                if image_url:
+                    article["image_url"] = image_url
+
+            if st.button("Save Changes", key=f"save_{i}"):
+                news_data[i] = {
+                    "id": edit_title.replace(" ", "_").lower(),
+                    "title": edit_title,
+                    "subtitle": edit_subtitle,
+                    "content": edit_content or article["content"],
+                    "takeaway": edit_takeaway,
+                    "image_url": article["image_url"],
                 }
-                news_data.append(new_article)
                 save_news_data(news_data)
-                st.success("Article added successfully!")
-        else:
-            st.error("All fields are required except Takeaway.")
 
-# Edit or delete existing articles
-st.header("Manage Existing Articles")
-for i, article in enumerate(news_data):
-    st.subheader(f"Article {i+1}: {article['title']}")
-    with st.expander("View / Edit Article"):
-        edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
-        edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
-        edit_content = st_quill("Edit your content here", key=f"edit_content_{i}")  # No direct `value`
-        edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
-        st.image(article["image_url"], caption="Current Image", use_container_width=True)
-        uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
+            if st.button("Delete Article", key=f"delete_{i}"):
+                del news_data[i]
+                save_news_data(news_data)
+                st.experimental_rerun()
 
-        if uploaded_image:
-            image_url = save_uploaded_image_to_github(uploaded_image)
-            if image_url:
-                article["image_url"] = image_url
-
-        if st.button("Save Changes", key=f"save_{i}"):
-            news_data[i] = {
-                "id": edit_title.replace(" ", "_").lower(),
-                "title": edit_title,
-                "subtitle": edit_subtitle,
-                "content": edit_content or article["content"],
-                "takeaway": edit_takeaway,
-                "image_url": article["image_url"],
-            }
-            save_news_data(news_data)
-
-        if st.button("Delete Article", key=f"delete_{i}"):
-            del news_data[i]
-            save_news_data(news_data)
-            st.experimental_rerun()
-
-        # Add button to post to Telegram
-        if st.button("Post to Telegram", key=f"post_telegram_{i}"):
-            short_url = f"https://habdulhaqnews.streamlit.app/?news_id={article['id']}"
-            post_to_telegram(
-                title=article["title"],
-                subtitle=article["subtitle"],
-                content=article["content"],
-                takeaway=article["takeaway"],
-                image_url=article["image_url"],
-                link=short_url,
-            )
+            # Add button to post to Telegram
+            if st.button("Post to Telegram", key=f"post_telegram_{i}"):
+                short_url = f"https://habdulhaqnews.streamlit.app/?news_id={article['id']}"
+                post_to_telegram(
+                    title=article["title"],
+                    subtitle=article["subtitle"],
+                    content=article["content"],
+                    takeaway=article["takeaway"],
+                    image_url=article["image_url"],
+                    link=short_url,
+                )
