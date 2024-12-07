@@ -14,13 +14,16 @@ def load_news_data():
 news_data = load_news_data()
 
 # Helper function to shorten a URL using TinyURL API
+# Helper function to shorten a URL using TinyURL API
 def shorten_url(long_url):
     try:
         response = requests.get(f"http://tinyurl.com/api-create.php?url={long_url}")
         if response.status_code == 200:
-            return response.text
+            short_url = response.text.strip()
+            st.write(f"Shortened URL: {short_url}")  # Debugging
+            return short_url
         else:
-            st.warning("Could not shorten the URL. Using the original link.")
+            st.warning(f"TinyURL API failed with status code {response.status_code}. Using the long URL instead.")
             return long_url
     except Exception as e:
         st.error(f"Error generating short URL: {e}")
