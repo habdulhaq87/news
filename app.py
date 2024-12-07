@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 from urllib.parse import urlencode
+import os
 
 # Set up page configuration
 st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
@@ -9,6 +10,13 @@ st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="w
 def load_news_data():
     with open("news.json", "r", encoding="utf-8") as file:
         return json.load(file)
+
+# Helper function to check image availability
+def get_image_url(image_path):
+    if os.path.exists(image_path):
+        return image_path
+    else:
+        return "https://via.placeholder.com/800x400?text=Image+Not+Found"  # Placeholder image
 
 news_data = load_news_data()
 
@@ -93,7 +101,8 @@ selected_news = next((news for news in news_data if news["id"] == selected_news_
 
 if selected_news:
     # Display the specific news article
-    st.image(selected_news["image_url"], use_column_width=True, caption=selected_news["title"])
+    image_url = get_image_url(selected_news["image_url"])
+    st.image(image_url, use_column_width=True, caption=selected_news["title"])
     st.markdown(f"""
         <div class="news-container">
             <div class="news-title">{selected_news["title"]}</div>
@@ -105,7 +114,8 @@ if selected_news:
 else:
     # Display all news articles with previews
     for news in news_data:
-        st.image(news["image_url"], use_column_width=True, caption=news["title"])
+        image_url = get_image_url(news["image_url"])
+        st.image(image_url, use_column_width=True, caption=news["title"])
         st.markdown(f"""
             <div class="news-container">
                 <div class="news-title">{news["title"]}</div>
