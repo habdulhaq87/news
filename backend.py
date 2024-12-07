@@ -3,7 +3,7 @@ import json
 import os
 import requests
 import base64
-
+from streamlit_ckeditor import st_ckeditor
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"  # Your GitHub username
@@ -31,7 +31,7 @@ def save_news_data_local(news_data):
     with open(JSON_FILE, "w", encoding="utf-8") as file:
         json.dump(news_data, file, ensure_ascii=False, indent=4)
 
-
+# Upload news data to GitHub
 def upload_to_github(file_path):
     # Read file content
     with open(file_path, "r", encoding="utf-8") as file:
@@ -98,8 +98,7 @@ st.header("Add New Article")
 with st.form("add_article_form", clear_on_submit=True):
     new_title = st.text_input("Title", key="new_title")
     new_subtitle = st.text_input("Subtitle", key="new_subtitle")
-    new_content = st.text_area("Content (Markdown supported)", key="new_content", 
-                                help="Use Markdown syntax for text styling. E.g., **bold**, *italic*, [link](http://example.com)")
+    new_content = st_ckeditor("Content", key="new_content", help="Use the editor to style your content.")
     new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway", 
                                  help="Use Markdown syntax for text styling.")
     uploaded_image = st.file_uploader("Upload Image (jpg, png)", type=["jpg", "png"], key="new_image")
@@ -131,7 +130,7 @@ for i, article in enumerate(news_data):
         # Display existing details
         edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
         edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
-        edit_content = st.text_area("Content (Markdown supported)", value=article["content"], key=f"edit_content_{i}")
+        edit_content = st_ckeditor("Content", value=article["content"], key=f"edit_content_{i}")
         edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
         st.image(article["image_url"], caption="Current Image", use_column_width=True)
         uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
