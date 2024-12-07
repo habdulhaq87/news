@@ -4,6 +4,8 @@ import os
 import requests
 import base64
 import time
+from streamlit_quill import st_quill  # Rich text editor
+from bot import post_to_telegram  # Import Telegram posting functionality
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"
@@ -12,10 +14,6 @@ GITHUB_PAT = st.secrets["github_pat"]
 
 JSON_FILE = "news.json"
 PHOTO_DIR = "photo"
-
-# Telegram bot token and chat ID
-TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
-TELEGRAM_CHAT_ID = "@habdulaq"
 
 # GitHub API URLs
 GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
@@ -75,44 +73,25 @@ def save_news_data(news_data):
         json.dump(news_data, file, ensure_ascii=False, indent=4)
     upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
 
-# Function to post to Telegram
-def post_to_telegram(article):
-    title = article["title"]
-    subtitle = article["subtitle"]
-    content = article["content"]
-    takeaway = article["takeaway"]
-    image_url = article["image_url"]
-    link = article.get("short_url", "")
-
-    message = f"""
-🌟 **{title}**
-_{subtitle}_
-
-{content[:200]}...
-
-🔗 [Read more]({link})
-
-📌 **Takeaway**:
-{takeaway}
-    """
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "photo": image_url,
-        "caption": message,
-        "parse_mode": "Markdown",
+# AI Suggestions for Writing Content
+def suggest_content(text):
+    api_url = "https://api.openai.com/v1/completions"
+    headers = {
+        "Authorization": f"Bearer {st.secrets['openai_api_key']}",
+        "Content-Type": "application/json"
     }
-    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-    try:
-        response = requests.post(telegram_url, data=payload)
-        if response.status_code == 200:
-            st.success(f"Posted successfully to Telegram: {title}")
-        else:
-            st.error(f"Failed to post to Telegram. Status code: {response.status_code}")
-            st.error(response.json())
-    except Exception as e:
-        st.error(f"Error posting to Telegram: {e}")
+    payload = {
+        "model": "text-davinci-003",
+        "prompt": f"Improve the following content: {text}",
+        "max_tokens": 150,
+        "temperature": 0.7
+    }
+    response = requests.post(api_url, headers=headers, json=payload)
+    if response.status_code == 200:
+        return response.json().get("choices")[0].get("text").strip()
+    return "No suggestions available."
 
-# Initialize the Streamlit backend app
+# Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")
 
 # Load existing news data
@@ -122,16 +101,82 @@ news_data = load_news_data()
 st.title("News Backend")
 st.write("Manage your news articles dynamically. Add, edit, delete, or post articles to Telegram.")
 
-# Manage existing articles with Telegram posting option
-st.header("Manage Articles")
+# Add a new article
+st.header("Add New Article")
+
+# Separate AI suggestions outside the form
+content_for_suggestions = st_quill("Write your content here and get suggestions", key="content_suggestions")
+if st.button("Get Suggestions for Content"):
+    suggestions = suggest_content(content_for_suggestions or "")
+    st.write(f"Suggestions: {suggestions}")
+
+with st.form("add_article_form", clear_on_submit=True):
+    new_title = st.text_input("Title", key="new_title")
+    new_subtitle = st.text_input("Subtitle", key="new_subtitle")
+    new_content = st_quill("Write your content here", key="new_content")  # Initialize blank editor
+    new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway")
+    uploaded_image = st.file_uploader("Upload Image (jpg, png)", type=["jpg", "png"], key="new_image")
+
+    submitted = st.form_submit_button("Add Article")
+
+    if submitted:
+        if new_title and new_subtitle and new_content and uploaded_image:
+            image_url = save_uploaded_image_to_github(uploaded_image)
+            if image_url:
+                new_article = {
+                    "id": new_title.replace(" ", "_").lower(),
+                    "title": new_title,
+                    "subtitle": new_subtitle,
+                    "content": new_content,
+                    "takeaway": new_takeaway,
+                    "image_url": image_url,
+                }
+                news_data.append(new_article)
+                save_news_data(news_data)
+                st.success("Article added successfully!")
+
+                # Post the article to Telegram
+                short_url = f"https://habdulhaqnews.streamlit.app/?news_id={new_article['id']}"
+                post_to_telegram(
+                    title=new_article["title"],
+                    subtitle=new_article["subtitle"],
+                    content=new_article["content"],
+                    takeaway=new_article["takeaway"],
+                    image_url=new_article["image_url"],
+                    link=short_url,
+                )
+        else:
+            st.error("All fields are required except Takeaway.")
+
+# Edit or delete existing articles
+st.header("Manage Existing Articles")
 for i, article in enumerate(news_data):
     st.subheader(f"Article {i+1}: {article['title']}")
-    with st.expander("View / Edit / Post Article"):
-        st.write(f"**Subtitle:** {article['subtitle']}")
-        st.write(f"**Content:** {article['content']}")
-        st.write(f"**Takeaway:** {article['takeaway']}")
-        st.image(article["image_url"], caption="Article Image", use_container_width=True)
+    with st.expander("View / Edit Article"):
+        edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
+        edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
+        edit_content = st_quill("Edit your content here", key=f"edit_content_{i}")  # No direct `value`
+        edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
+        st.image(article["image_url"], caption="Current Image", use_container_width=True)
+        uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
 
-        # Add button to post to Telegram
-        if st.button(f"Post '{article['title']}' to Telegram", key=f"post_{i}"):
-            post_to_telegram(article)
+        if uploaded_image:
+            image_url = save_uploaded_image_to_github(uploaded_image)
+            if image_url:
+                article["image_url"] = image_url
+
+        if st.button("Save Changes", key=f"save_{i}"):
+            news_data[i] = {
+                "id": edit_title.replace(" ", "_").lower(),
+                "title": edit_title,
+                "subtitle": edit_subtitle,
+                "content": edit_content or article["content"],
+                "takeaway": edit_takeaway,
+                "image_url": article["image_url"],
+            }
+            save_news_data(news_data)
+
+        if st.button("Delete Article", key=f"delete_{i}"):
+            del news_data[i]
+            save_news_data(news_data)
+            st.experimental_rerun()
