@@ -1,5 +1,6 @@
 import streamlit as st
 import json
+import uuid
 from urllib.parse import urlencode
 
 # Set up page configuration
@@ -11,6 +12,10 @@ def load_news_data():
         return json.load(file)
 
 news_data = load_news_data()
+
+# Helper function to generate a unique ID
+def generate_unique_id():
+    return str(uuid.uuid4())
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
