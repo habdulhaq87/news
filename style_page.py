@@ -127,7 +127,7 @@ def footer():
             <!-- Website Section -->
             <div class="footer-item">
                 <a href="https://www.habdulhaq.com" target="_blank">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python Logo">
+                    <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.JPG" alt="DT Logo">
                     <p>پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
                 </a>
             </div>
@@ -154,7 +154,7 @@ def style_page():
                 </div>
                 <div class="footer-item">
                     <a href="https://www.habdulhaq.com" target="_blank">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python Logo">
+                        <img src="https://raw.githubusercontent.com/habdulhaq87/news/main/photo/DT.JPG" alt="DT Logo">
                         <p>پایثۆن فێربە بەخۆڕایی لەگەڵ هاوکار</p>
                     </a>
                 </div>
