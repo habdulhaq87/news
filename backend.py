@@ -1,10 +1,9 @@
-
 import streamlit as st
 import json
 import os
 import requests
 import base64
-
+import time
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"  # Your GitHub username
@@ -32,7 +31,7 @@ def save_news_data_local(news_data):
     with open(JSON_FILE, "w", encoding="utf-8") as file:
         json.dump(news_data, file, ensure_ascii=False, indent=4)
 
-
+# Upload the news.json file to GitHub
 def upload_to_github(file_path):
     # Read file content
     with open(file_path, "r", encoding="utf-8") as file:
@@ -79,10 +78,24 @@ def save_news_data(news_data):
 
 # Save uploaded image to the photo directory
 def save_uploaded_image(uploaded_file):
-    file_path = os.path.join(PHOTO_DIR, uploaded_file.name)
-    with open(file_path, "wb") as file:
-        file.write(uploaded_file.getbuffer())
-    return file_path
+    if uploaded_file is None:
+        st.error("No file uploaded.")
+        return None
+
+    # Generate unique file name to avoid overwriting
+    timestamp = int(time.time())
+    filename = f"{timestamp}_{uploaded_file.name}"
+    file_path = os.path.join(PHOTO_DIR, filename)
+
+    try:
+        # Save the uploaded image
+        with open(file_path, "wb") as file:
+            file.write(uploaded_file.getbuffer())
+        st.success(f"Image successfully saved to: {file_path}")
+        return file_path
+    except Exception as e:
+        st.error(f"Failed to save image: {e}")
+        return None
 
 # Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")
@@ -110,17 +123,18 @@ with st.form("add_article_form", clear_on_submit=True):
     if submitted:
         if new_title and new_subtitle and new_content and uploaded_image:
             image_path = save_uploaded_image(uploaded_image)
-            relative_path = os.path.relpath(image_path, PHOTO_DIR)  # Save relative path to JSON
-            new_article = {
-                "id": new_title.replace(" ", "_").lower(),
-                "title": new_title,
-                "subtitle": new_subtitle,
-                "content": new_content,
-                "takeaway": new_takeaway,
-                "image_url": os.path.join(PHOTO_DIR, relative_path),
-            }
-            news_data.append(new_article)
-            save_news_data(news_data)
+            if image_path:
+                relative_path = os.path.relpath(image_path, start=os.getcwd())
+                new_article = {
+                    "id": new_title.replace(" ", "_").lower(),
+                    "title": new_title,
+                    "subtitle": new_subtitle,
+                    "content": new_content,
+                    "takeaway": new_takeaway,
+                    "image_url": relative_path,
+                }
+                news_data.append(new_article)
+                save_news_data(news_data)
         else:
             st.error("All fields are required except Takeaway.")
 
@@ -139,8 +153,9 @@ for i, article in enumerate(news_data):
 
         if uploaded_image:
             image_path = save_uploaded_image(uploaded_image)
-            relative_path = os.path.relpath(image_path, PHOTO_DIR)
-            article["image_url"] = os.path.join(PHOTO_DIR, relative_path)
+            if image_path:
+                relative_path = os.path.relpath(image_path, start=os.getcwd())
+                article["image_url"] = relative_path
 
         # Save changes
         if st.button("Save Changes", key=f"save_{i}"):
