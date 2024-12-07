@@ -15,6 +15,7 @@ In streaming, platforms are becoming more like cable. Disney bundled ESPN with D
 Tech and media are changing fast—more to come!
 """
 news_image_url = "https://i.imgur.com/38GVvtY.jpg"  # News banner image
+telegram_logo_url = "https://i.imgur.com/Hxr3jCj.png"  # Telegram logo
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
@@ -82,6 +83,19 @@ st.markdown("""
         .footer a:hover {
             text-decoration: underline;
         }
+        .footnote-container {
+            margin-top: 50px;
+            text-align: center;
+            color: #555555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .telegram-logo {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -114,6 +128,17 @@ else:
         st.success("Shareable Link Generated!")
         st.write("Click the link below to share:")
         st.markdown(f'<a class="share-button" href="{shareable_link}" target="_blank">Share Now</a>', unsafe_allow_html=True)
+
+# Add a footnote with Telegram and contact info
+st.markdown(f"""
+    <div class="footnote-container">
+        Follow <strong>Hawkar Ali Abdulhaq</strong> on Telegram: 
+        <img src="{telegram_logo_url}" class="telegram-logo">
+        <a href="https://t.me/yourtelegramchannel" target="_blank">Telegram Channel</a><br>
+        <a href="https://www.habdulhaq.com" target="_blank">www.habdulhaq.com</a><br>
+        <a href="mailto:connect@habdulhaq.com">connect@habdulhaq.com</a>
+    </div>
+""", unsafe_allow_html=True)
 
 # Add a footer
 st.markdown("""
