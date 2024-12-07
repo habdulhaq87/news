@@ -1,10 +1,10 @@
 import streamlit as st
-from urllib.parse import urlencode, parse_qs
+from urllib.parse import urlencode
 
 # Set up page configuration
 st.set_page_config(page_title="Instant News", page_icon="⚡", layout="wide")
 
-# Placeholder for stored news (replace with a database in production)
+# Predefined news articles (simulating a database)
 news_storage = {
     "breaking_news": {
         "title": "Breaking News: Instant Pages Achieved!",
@@ -12,13 +12,25 @@ news_storage = {
     },
     "climate_update": {
         "title": "Climate Update: New Initiatives Announced",
-        "content": "Governments worldwide are joining hands to implement large-scale climate resilience programs.",
+        "content": "Governments worldwide are joining hands to implement large-scale climate resilience programs, focusing on renewable energy and sustainable infrastructure.",
+    },
+    "tech_innovation": {
+        "title": "Tech Innovation: AI Shapes the Future",
+        "content": "Artificial Intelligence continues to revolutionize industries, from healthcare to finance, promising new levels of efficiency and innovation.",
+    },
+    "health_alert": {
+        "title": "Health Alert: Flu Season Tips",
+        "content": "As flu season approaches, experts advise staying up to date on vaccinations, practicing good hygiene, and maintaining a healthy lifestyle.",
+    },
+    "sports_highlight": {
+        "title": "Sports Highlight: Historic Football Win",
+        "content": "In an unforgettable match, the underdog team triumphed in the final moments, sparking celebrations across the nation.",
     },
 }
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
-    base_url = "https://q5c32sstqku8zyyrmxtcil.streamlit.app"
+    base_url = "https://q5c32sstqku8zyyrmxtcil.streamlit.app"  # Replace with your Streamlit URL
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
 
