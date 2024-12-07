@@ -1,15 +1,15 @@
 import streamlit as st
 from streamlit_quill import st_quill
-from bot import post_to_telegram  # Import Telegram posting functionality
 
-def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
+def view_articles(news_data, save_news_data, save_uploaded_image_to_github, post_to_telegram):
     """
     Display and manage articles: edit, delete, and post to Telegram.
-    
+
     Args:
         news_data (list): List of articles loaded from the JSON file.
         save_news_data (function): Function to save updated news data back to the JSON file.
         save_uploaded_image_to_github (function): Function to save uploaded images to GitHub.
+        post_to_telegram (function): Function to post articles to Telegram.
     """
     st.title("View and Manage Articles")
 
@@ -19,23 +19,13 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
             # Edit article fields
             edit_title = st.text_input("Title", value=article["title"], key=f"edit_title_{i}")
             edit_subtitle = st.text_input("Subtitle", value=article["subtitle"], key=f"edit_subtitle_{i}")
-            
-            # Use st_quill for rich-text content editing
-            edit_content = st_quill(
-                key=f"edit_content_{i}",
-                value=article["content"]  # Provide initial content
-            )
-            
+            edit_content = st_quill(key=f"edit_content_{i}", value=article["content"])
             edit_takeaway = st.text_area("Takeaway (Markdown supported)", value=article["takeaway"], key=f"edit_takeaway_{i}")
-            
-            # Display current image
             st.image(article["image_url"], caption="Current Image", use_container_width=True)
             
             # Replace image
             uploaded_image = st.file_uploader(f"Replace Image for Article {i+1} (jpg, png)", type=["jpg", "png"], key=f"edit_image_{i}")
-
             if uploaded_image:
-                # Save new image and update the article
                 image_url = save_uploaded_image_to_github(uploaded_image)
                 if image_url:
                     article["image_url"] = image_url
@@ -58,13 +48,12 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
                 del news_data[i]
                 save_news_data(news_data)
                 st.success("Article deleted successfully!")
-                st.experimental_set_query_params(rerun="true")  # Force a page reload using query parameters
-                st.stop()  # Ensure the script stops after updating the query parameters
+                st.experimental_rerun()
 
             # Post article to Telegram
             if st.button("Post to Telegram", key=f"post_telegram_{i}"):
                 short_url = f"https://habdulhaqnews.streamlit.app/?news_id={article['id']}"
-                success = post_to_telegram(
+                success, debug_message = post_to_telegram(
                     title=article["title"],
                     subtitle=article["subtitle"],
                     content=article["content"],
@@ -73,6 +62,7 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github):
                     link=short_url,
                 )
                 if success:
-                    st.success("Article posted to Telegram successfully!")
+                    st.success(f"Article '{article['title']}' posted to Telegram successfully!")
                 else:
                     st.error("Failed to post the article to Telegram.")
+                    st.text_area("Debug Information", debug_message, height=200)
