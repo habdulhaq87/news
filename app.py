@@ -3,6 +3,9 @@ from urllib.parse import urlencode
 import json
 import os
 
+# Set up page configuration (must be the first Streamlit command)
+st.set_page_config(page_title="News App", page_icon="📰", layout="wide")
+
 # File path for the JSON file
 NEWS_FILE = "news.json"
 
@@ -49,15 +52,12 @@ if submit_button:
     else:
         st.sidebar.error("❌ All fields are required!")
 
-# Load the latest news article
+# Check if there is news to display
 if news_list:
     news = news_list[0]
 else:
     st.error("No news articles available.")
     st.stop()
-
-# Set up page configuration
-st.set_page_config(page_title=news["title"], page_icon="📰", layout="wide")
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
