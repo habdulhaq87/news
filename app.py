@@ -14,7 +14,7 @@ In streaming, platforms are becoming more like cable. Disney bundled ESPN with D
 
 Tech and media are changing fast—more to come!
 """
-news_image_url = "https://imgur.com/38GVvtY"
+news_image_url = "https://i.imgur.com/38GVvtY.jpg"  # Provided image link
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
