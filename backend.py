@@ -78,7 +78,7 @@ def save_news_data(news_data):
 # Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")
 
-# Apply styles
+# Apply styles globally
 apply_styles()
 
 # Sidebar Navigation as Buttons
