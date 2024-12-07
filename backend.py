@@ -79,20 +79,16 @@ st.set_page_config(page_title="News Backend", layout="wide")
 
 # Sidebar Navigation
 st.sidebar.title("Navigation")
-if st.sidebar.button("Add New Article"):
-    st.session_state["current_page"] = "add"
-if st.sidebar.button("View Articles"):
-    st.session_state["current_page"] = "view"
-
-# Set default page to "view articles"
-if "current_page" not in st.session_state:
-    st.session_state["current_page"] = "view"
+navigation = st.sidebar.radio(
+    "Select Page",
+    options=["Add New Article", "View Articles"]
+)
 
 # Load existing news data
 news_data = load_news_data()
 
 # Page: Add New Article
-if st.session_state["current_page"] == "add":
+if navigation == "Add New Article":
     st.title("Add New Article")
     with st.form("add_article_form", clear_on_submit=True):
         new_title = st.text_input("Title", key="new_title")
@@ -122,5 +118,5 @@ if st.session_state["current_page"] == "add":
                 st.error("All fields are required except Takeaway.")
 
 # Page: View Articles
-elif st.session_state["current_page"] == "view":
+elif navigation == "View Articles":
     view_articles(news_data, save_news_data, save_uploaded_image_to_github)
