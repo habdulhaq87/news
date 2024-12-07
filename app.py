@@ -27,12 +27,16 @@ def generate_shareable_link(news_id):
     params = {"news_id": news_id}
     return f"{base_url}?{urlencode(params)}"
 
-# Add custom CSS for enhanced styling
+# Add custom CSS for enhanced styling with custom font
 st.markdown("""
     <style>
+        @font-face {
+            font-family: 'Speda';
+            src: url('font/speda.ttf') format('truetype');
+        }
         body {
             background-color: #f4f4f4;
-            font-family: "Arial", sans-serif;
+            font-family: 'Speda', Arial, sans-serif;
             direction: rtl;
         }
         .news-container {
@@ -42,7 +46,6 @@ st.markdown("""
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
             max-width: 800px;
             margin: 0 auto;
-            direction: rtl;
         }
         .news-title {
             font-size: 36px;
@@ -60,7 +63,6 @@ st.markdown("""
             font-size: 20px;
             line-height: 1.8;
             color: #555555;
-            direction: rtl;
         }
         .share-button {
             display: inline-block;
@@ -106,10 +108,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Check if the app is accessed with a query parameter
+# Main news display logic remains the same
 query_params = st.experimental_get_query_params()
 if query_params.get("news_id", [None])[0] == news_id:
-    # Display the specific news article
     st.image(news_image_url, use_column_width=True, caption="AI و بڵاوکردنەوە: نوێترین گۆڕانکاریەکان")
     st.markdown(f"""
         <div class="news-container">
@@ -119,7 +120,6 @@ if query_params.get("news_id", [None])[0] == news_id:
         </div>
     """, unsafe_allow_html=True)
 else:
-    # Display default news content
     st.image(news_image_url, use_column_width=True, caption="AI و بڵاوکردنەوە: نوێترین گۆڕانکاریەکان")
     st.markdown(f"""
         <div class="news-container">
@@ -128,28 +128,3 @@ else:
             <div class="news-content">{news_content[:250]}...</div>
         </div>
     """, unsafe_allow_html=True)
-    
-    # Generate shareable link
-    shareable_link = generate_shareable_link(news_id)
-    if st.button("🔗 هاوکاری بکە و هەواڵەکەی بڵاو بکە", key="share_button", help="کرتە بکە بۆ هاوکاری کردن"):
-        st.success("بەستەرەکە دروست کرا!")
-        st.write("کرتە بکە لە بەستەرەکە بۆ هاوکاری:")
-        st.markdown(f'<a class="share-button" href="{shareable_link}" target="_blank">بڵاوکردنەوە</a>', unsafe_allow_html=True)
-
-# Add a footnote with Telegram and contact info
-st.markdown(f"""
-    <div class="footnote-container">
-        فەرەی <strong>ھەوکەر علی عبدولحق</strong> لە تێلەگرام:
-        <a href="https://t.me/habdulaq" target="_blank"><img src="{telegram_logo_url}" class="telegram-logo"></a>
-        <br>
-        <a href="https://www.habdulhaq.com" target="_blank">www.habdulhaq.com</a><br>
-        <a href="mailto:connect@habdulhaq.com">connect@habdulhaq.com</a>
-    </div>
-""", unsafe_allow_html=True)
-
-# Add a footer
-st.markdown("""
-    <div class="footer">
-        پەروەردەکراو بە <strong>Streamlit</strong> | <a href="https://streamlit.io" target="_blank">فێرببە</a>
-    </div>
-""", unsafe_allow_html=True)
