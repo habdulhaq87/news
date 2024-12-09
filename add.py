@@ -3,6 +3,8 @@ from streamlit_quill import st_quill  # Rich text editor
 from backend import save_uploaded_image_to_github, upload_to_github  # Import backend functions
 import json
 import base64
+import requests  # Import requests for API calls
+
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"
