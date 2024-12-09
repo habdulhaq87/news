@@ -8,7 +8,6 @@ from view import view_articles  # Import view_articles function
 from bot import post_to_telegram  # Import Telegram posting functionality
 from style import apply_styles, footer  # Import styles and footer functions
 from style_page import style_page  # Import style management page
-import add  # Import the add.py module
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"
@@ -72,9 +71,26 @@ def load_news_data():
 
 # Save news data to GitHub
 def save_news_data(news_data):
-    with open(JSON_FILE, "w", encoding="utf-8") as file:
-        json.dump(news_data, file, ensure_ascii=False, indent=4)
-    upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
+    content = json.dumps(news_data, ensure_ascii=False, indent=4)
+    content_encoded = base64.b64encode(content.encode("utf-8")).decode("utf-8")
+
+    response = requests.get(GITHUB_API_URL_JSON, headers={"Authorization": f"token {GITHUB_PAT}"})
+    sha = response.json().get("sha") if response.status_code == 200 else None
+
+    payload = {
+        "message": "Update news data via Streamlit app",
+        "content": content_encoded,
+        "sha": sha,
+    }
+
+    response = requests.put(
+        GITHUB_API_URL_JSON,
+        headers={"Authorization": f"token {GITHUB_PAT}"},
+        json=payload,
+    )
+
+    if response.status_code not in [200, 201]:
+        st.error("Failed to update news data on GitHub. Please check your permissions or the repository.")
 
 # Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")  # Called once here
@@ -99,7 +115,8 @@ news_data = load_news_data()
 
 # Page: Add New Article
 if st.session_state["current_page"] == "add":
-    add.main(news_data)  # Call the main function from add.py for adding new articles
+    from add import main as add_main  # Importing here to avoid circular import
+    add_main(news_data, save_news_data, save_uploaded_image_to_github)
 
 # Page: View Articles
 elif st.session_state["current_page"] == "view":
