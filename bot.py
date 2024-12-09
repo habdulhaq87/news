@@ -2,7 +2,7 @@ import requests
 
 # Telegram bot token and chat ID
 TELEGRAM_BOT_TOKEN = "7553058540:AAFphfdsbYV6En1zCmPM4LeKuTYT65xJmkc"
-TELEGRAM_CHAT_ID = "@hawkartest"  # Replace with your Telegram channel username or ID
+TELEGRAM_CHAT_ID = "@habdulaq"  # Replace with your Telegram channel username or ID
 
 
 def send_animated_sticker(sticker_id):
