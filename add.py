@@ -2,7 +2,8 @@ import streamlit as st
 from streamlit_quill import st_quill  # Rich text editor
 import json
 import base64
-import requests  # Import requests for API calls
+import requests
+import time  # For generating unique timestamps for filenames
 
 
 # Constants for GitHub integration
@@ -13,85 +14,15 @@ JSON_FILE = "news.json"
 GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
 
 
-def load_news_data():
-    """Load the current news data from GitHub."""
-    response = requests.get(GITHUB_API_URL_JSON, headers={"Authorization": f"token {GITHUB_PAT}"})
-    if response.status_code == 200:
-        content = base64.b64decode(response.json().get("content")).decode("utf-8")
-        return json.loads(content)
-    return []
-
-
-def save_news_data(news_data):
-    """Save updated news data to GitHub."""
-    # Convert the news data to JSON
-    content = json.dumps(news_data, ensure_ascii=False, indent=4)
-    content_encoded = base64.b64encode(content.encode("utf-8")).decode("utf-8")
-
-    # Get the current SHA for the file
-    response = requests.get(GITHUB_API_URL_JSON, headers={"Authorization": f"token {GITHUB_PAT}"})
-    if response.status_code == 200:
-        sha = response.json().get("sha")
-    else:
-        sha = None
-
-    # Prepare the payload for the update request
-    payload = {
-        "message": "Update news data via Streamlit app",
-        "content": content_encoded,
-        "sha": sha,
-    }
-
-    # Update the file on GitHub
-    response = requests.put(
-        GITHUB_API_URL_JSON,
-        headers={"Authorization": f"token {GITHUB_PAT}"},
-        json=payload,
-    )
-
-    if response.status_code in [200, 201]:
-        st.success("News data updated successfully!")
-    else:
-        st.error("Failed to update news data on GitHub. Please check your permissions or the repository.")
-
-
-def save_uploaded_image_to_github(uploaded_file):
-    """Save uploaded image to GitHub and return its URL."""
-    if not uploaded_file:
-        return None
-
-    timestamp = int(time.time())
-    filename = f"{timestamp}_{uploaded_file.name}"
-    file_path = f"/tmp/{filename}"
-
-    with open(file_path, "wb") as file:
-        file.write(uploaded_file.getbuffer())
-
-    github_path = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/photo/{filename}"
-
-    with open(file_path, "rb") as file:
-        content = base64.b64encode(file.read()).decode("utf-8")
-
-    payload = {
-        "message": f"Add image {filename}",
-        "content": content,
-        "sha": None,  # For new files, SHA is not required
-    }
-
-    headers = {"Authorization": f"token {GITHUB_PAT}"}
-    response = requests.put(github_path, headers=headers, json=payload)
-
-    if response.status_code in [200, 201]:
-        return f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/photo/{filename}"
-    else:
-        st.error("Failed to upload the image to GitHub.")
-        return None
-
-
-def main(news_data):
+def main(news_data, save_news_data, save_uploaded_image_to_github):
     """
     Main function to add a new article.
     Allows users to upload an image, embed it in the content, and save the article.
+
+    Args:
+        news_data (list): The existing news data.
+        save_news_data (function): Function to save updated news data.
+        save_uploaded_image_to_github (function): Function to upload an image to GitHub and return its URL.
     """
     # Page Title
     st.title("Add New Article")
