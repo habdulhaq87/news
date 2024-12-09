@@ -19,7 +19,6 @@ def main(news_data):
         
         # Content Editor Section
         st.markdown("### Content Editor")
-        st.write("You can add images to your content by uploading them below and embedding their URLs.")
         new_content = st_quill("Write your content here", key="new_content")  # Rich text editor
 
         # Image Upload for Embedding in Content
@@ -28,11 +27,16 @@ def main(news_data):
             type=["jpg", "png"], 
             key="new_image_embed"
         )
+
+        # Initialize variables to store image information
+        image_url = None
         if uploaded_image:
             # Save uploaded image and get the URL
             image_url = save_uploaded_image_to_github(uploaded_image)
             if image_url:
-                st.success(f"Image uploaded! Embed this URL in your content: `{image_url}`")
+                # Automatically embed the image in the content
+                new_content += f'\n\n![Image Description]({image_url})'
+                st.success("Image uploaded and embedded in the content!")
             else:
                 st.error("Failed to upload image. Please try again.")
 
@@ -50,8 +54,9 @@ def main(news_data):
                     "id": new_title.replace(" ", "_").lower(),
                     "title": new_title,
                     "subtitle": new_subtitle,
-                    "content": new_content,  # Rich content including text and embedded image URLs
+                    "content": new_content,  # Content now includes embedded image URLs
                     "takeaway": new_takeaway,
+                    "image_url": image_url,  # Save the image URL separately
                 }
                 # Append the new article to the news data
                 news_data.append(new_article)
