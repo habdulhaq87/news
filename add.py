@@ -7,7 +7,6 @@ import os
 import zipfile
 from docx import Document
 
-
 # GitHub Constants
 GITHUB_USER = "habdulhaq87"
 GITHUB_REPO = "news"
@@ -27,16 +26,15 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     Returns:
         str: The extracted content in Markdown format.
     """
-    # Load the .docx file
     document = Document(docx_file)
     content = ""
 
-    # Extract text
+    # Extract text paragraphs
     for paragraph in document.paragraphs:
         if paragraph.text.strip():
             content += f"{paragraph.text}\n\n"
 
-    # Handle images stored in the .docx file as media
+    # Handle images in .docx
     with zipfile.ZipFile(docx_file, "r") as docx_zip:
         image_files = [f for f in docx_zip.namelist() if f.startswith("word/media/")]
 
@@ -90,14 +88,21 @@ def main(news_data, save_news_data, save_uploaded_image_to_github):
         uploaded_docx = st.file_uploader("Upload a .docx file", type=["docx"], key="docx_upload")
 
         # Content Editor Section
+        st.markdown("### Content Editor")
         new_content = ""
+
         if uploaded_docx:
             # Extract content from the uploaded .docx file
             new_content = extract_content_from_docx(uploaded_docx, save_uploaded_image_to_github)
-            st.text_area("Extracted Content", value=new_content, height=300, key="new_content_textarea", disabled=True)
+            st.text_area(
+                "Extracted Content (Read-only)",
+                value=new_content,
+                height=300,
+                key="extracted_content",
+                disabled=True,
+            )
         else:
             # Use the Quill editor if no .docx is uploaded
-            st.markdown("### Content Editor")
             new_content = st_quill("Write your content here", key="new_content_quill")
 
         # Article Takeaway
