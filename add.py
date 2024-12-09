@@ -26,6 +26,10 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     Returns:
         str: The extracted content in Markdown format.
     """
+    import zipfile
+    import io
+
+    # Load the .docx file
     document = Document(docx_file)
     content = ""
 
@@ -34,17 +38,18 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
         if paragraph.text.strip():
             content += f"{paragraph.text}\n\n"
 
-    # Extract images
-    for rel in document.part.rels.values():
-        if "image" in rel.target_ref:
+    # Handle images stored in the .docx file as media
+    with zipfile.ZipFile(docx_file, "r") as docx_zip:
+        image_files = [f for f in docx_zip.namelist() if f.startswith("word/media/")]
+
+        for image_file in image_files:
             try:
-                # Access the image binary data
-                image_part = document.part.related_parts[rel.target_ref]
-                image_data = image_part.blob
+                # Extract image data
+                image_data = docx_zip.read(image_file)
 
                 # Save the image locally
                 timestamp = int(time.time())
-                filename = f"{timestamp}.jpg"
+                filename = f"{timestamp}_{image_file.split('/')[-1]}"
                 file_path = f"/tmp/{filename}"
 
                 with open(file_path, "wb") as img_file:
@@ -53,10 +58,11 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
                 # Upload the image to GitHub
                 with open(file_path, "rb") as img_file:
                     image_url = save_uploaded_image_to_github(img_file)
+
                 if image_url:
                     content += f"![Image Description]({image_url})\n\n"
             except Exception as e:
-                st.error(f"Error processing image: {e}")
+                st.error(f"Error processing image: {image_file} - {e}")
 
     return content.strip()
 
