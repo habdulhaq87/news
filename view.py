@@ -13,6 +13,21 @@ def view_articles(news_data, save_news_data, save_uploaded_image_to_github, post
     """
     st.title("View and Manage Articles")
 
+    # Check Button: Validate JSON file content
+    if st.button("Check JSON File for Validity"):
+        invalid_articles = []
+        for i, article in enumerate(news_data):
+            missing_fields = [field for field in ["id", "title", "subtitle", "content", "image_url"] if not article.get(field)]
+            if missing_fields:
+                invalid_articles.append({"index": i + 1, "missing_fields": missing_fields})
+        
+        if invalid_articles:
+            st.error("The JSON file contains invalid articles:")
+            for article in invalid_articles:
+                st.write(f"Article {article['index']} is missing: {', '.join(article['missing_fields'])}")
+        else:
+            st.success("All articles in the JSON file are valid!")
+
     for i, article in enumerate(news_data):
         st.subheader(f"Article {i + 1}: {article.get('title', 'Untitled')}")
         with st.expander("View / Edit Article"):
