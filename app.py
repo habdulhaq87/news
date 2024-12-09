@@ -38,7 +38,7 @@ def generate_shareable_link(news_id):
     return shorten_url(long_url)
 
 # Check if the app is accessed with a query parameter
-query_params = st.query_params
+query_params = st.experimental_get_query_params()
 selected_news_id = query_params.get("news_id", [None])[0]
 
 # Find and display the specific news article if news_id is provided
