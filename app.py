@@ -1,7 +1,8 @@
 import streamlit as st
 import json
 import requests
-from urllib.parse import urlencode, quote  # Import quote to encode URLs
+from urllib.parse import urlencode, quote
+from markdown import markdown  # Import markdown for better HTML rendering
 from style import apply_styles, footer  # Import styles and footer
 import re  # For parsing image URLs from Markdown
 
@@ -45,22 +46,21 @@ def encode_url(url):
     """
     return quote(url, safe=":/")
 
-# Function to extract and display images from Markdown content
-def display_images_from_content(content):
+# Function to process Markdown content and ensure proper rendering
+def render_markdown(content):
     """
-    Parse the Markdown content and explicitly display any embedded images.
+    Convert Markdown content to HTML for rendering with Streamlit.
+    This ensures embedded images and other elements are handled properly.
     """
-    # Regex to find Markdown image syntax: ![Alt Text](URL)
+    # Encode all URLs in the Markdown content
     image_pattern = r"!\[.*?\]\((.*?)\)"
-    image_urls = re.findall(image_pattern, content)
-
-    for url in image_urls:
-        encoded_url = encode_url(url)
-        st.image(encoded_url, use_column_width=True)
-
-    # Remove the image Markdown syntax from the content
-    content_without_images = re.sub(image_pattern, "", content)
-    return content_without_images
+    def encode_url_in_markdown(match):
+        return f"![Alt Text]({encode_url(match.group(1))})"
+    content = re.sub(image_pattern, encode_url_in_markdown, content)
+    
+    # Convert Markdown to HTML
+    html_content = markdown(content)
+    st.markdown(html_content, unsafe_allow_html=True)
 
 # Check if the app is accessed with a query parameter
 query_params = st.experimental_get_query_params()
@@ -80,11 +80,9 @@ if selected_news_id:
                 <div class="news-subtitle">{selected_news["subtitle"]}</div>
             </div>
         """, unsafe_allow_html=True)
-        
-        # Process and display images embedded in the content
-        remaining_content = display_images_from_content(selected_news["content"])
-        # Render the remaining content as Markdown
-        st.markdown(remaining_content)
+
+        # Render the content with properly encoded URLs
+        render_markdown(selected_news["content"])
         
         st.markdown(f"""
             <div class="news-takeaway">📌 : {selected_news["takeaway"]}</div>
