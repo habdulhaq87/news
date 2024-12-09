@@ -77,7 +77,7 @@ def save_news_data(news_data):
     upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
 
 # Initialize the Streamlit app
-st.set_page_config(page_title="News Backend", layout="wide")
+st.set_page_config(page_title="News Backend", layout="wide")  # Called once here
 
 # Apply styles globally
 apply_styles()
