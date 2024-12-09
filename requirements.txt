@@ -2,3 +2,4 @@ streamlit
 requests
 streamlit-quill
 markdown
+python-docx
