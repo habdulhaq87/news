@@ -37,5 +37,13 @@
         "content": "Write your content here\n",
         "takeaway": "asd",
         "image_url": null
+    },
+    {
+        "id": "it_is_",
+        "title": "It is ",
+        "subtitle": "sasd",
+        "content": "Write your content here\n\n\n![Image Description](https://raw.githubusercontent.com/habdulhaq87/news/main/photo/1733738302_RLF CSR.jpg)",
+        "takeaway": "asdv",
+        "image_url": "https://raw.githubusercontent.com/habdulhaq87/news/main/photo/1733738302_RLF CSR.jpg"
     }
 ]
