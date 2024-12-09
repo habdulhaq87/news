@@ -29,20 +29,30 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     document = Document(docx_file)
     content = ""
 
+    # Extract text
     for paragraph in document.paragraphs:
         if paragraph.text.strip():
             content += f"{paragraph.text}\n\n"
 
-    # Handle images
+    # Extract and save images
     for rel in document.part.rels.values():
         if "image" in rel.target_ref:
-            # Save the image to GitHub
-            image_url = save_uploaded_image_to_github(uploaded_file=docx_file)
+            # Extract image data
+            image_data = document.part.package.part_related_by(rel).blob
+
+            # Save image locally
+            timestamp = int(time.time())
+            filename = f"{timestamp}_{rel.target_ref.split('/')[-1].split('.')[0]}.jpg"
+
+            with open(f"/tmp/{filename}", "wb") as img_file:
+                img_file.write(image_data)
+
+            # Upload the image to GitHub
+            image_url = save_uploaded_image_to_github(open(f"/tmp/{filename}", "rb"))
             if image_url:
-                content += f"![Image]({image_url})\n\n"
+                content += f"![Image Description]({image_url})\n\n"
 
     return content.strip()
-
 
 def main(news_data, save_news_data, save_uploaded_image_to_github):
     """
