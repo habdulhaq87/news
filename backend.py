@@ -9,6 +9,12 @@ from bot import post_to_telegram  # Import Telegram posting functionality
 from style import apply_styles, footer  # Import styles and footer functions
 from style_page import style_page  # Import style management page
 
+# Set up page configuration
+st.set_page_config(page_title="News Backend", page_icon="📰", layout="wide")
+
+# Apply custom styles
+apply_styles()
+
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"
 GITHUB_REPO = "news"
@@ -39,7 +45,7 @@ def upload_to_github(file_path, github_path, commit_message):
     response = requests.put(
         github_path,
         headers={"Authorization": f"token {GITHUB_PAT}"},
-        json=payload
+        json=payload,
     )
 
     return response.status_code in [200, 201]
@@ -92,13 +98,7 @@ def save_news_data(news_data):
     if response.status_code not in [200, 201]:
         st.error("Failed to update news data on GitHub. Please check your permissions or the repository.")
 
-# Initialize the Streamlit app
-st.set_page_config(page_title="News Backend", layout="wide")  # Called once here
-
-# Apply styles globally
-apply_styles()
-
-# Sidebar Navigation as Buttons
+# Sidebar Navigation
 st.sidebar.title("Navigation")
 if "current_page" not in st.session_state:
     st.session_state["current_page"] = "view"  # Default page
@@ -125,3 +125,6 @@ elif st.session_state["current_page"] == "view":
 # Page: Style Page
 elif st.session_state["current_page"] == "style":
     style_page()
+
+# Add footer to all pages
+footer()
