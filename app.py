@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 import requests
-from urllib.parse import urlencode, quote  # Import quote to encode URLs
+from urllib.parse import urlencode
 from style import apply_styles, footer  # Import styles and footer
 import re  # For parsing image URLs from Markdown
 
@@ -38,13 +38,6 @@ def generate_shareable_link(news_id):
     long_url = f"{base_url}?{urlencode(params)}"
     return shorten_url(long_url)
 
-# Function to encode URLs
-def encode_url(url):
-    """
-    Ensure the URL is properly encoded to handle spaces and special characters.
-    """
-    return quote(url, safe=":/")
-
 # Function to extract and display images from Markdown content
 def display_images_from_content(content):
     """
@@ -55,8 +48,7 @@ def display_images_from_content(content):
     image_urls = re.findall(image_pattern, content)
 
     for url in image_urls:
-        encoded_url = encode_url(url)
-        st.image(encoded_url, use_column_width=True)
+        st.image(url, use_column_width=True)
 
     # Remove the image Markdown syntax from the content
     content_without_images = re.sub(image_pattern, "", content)
@@ -70,10 +62,7 @@ selected_news_id = query_params.get("news_id", [None])[0]
 if selected_news_id:
     selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
     if selected_news:
-        # Ensure the main image URL is encoded
-        encoded_image_url = encode_url(selected_news["image_url"])
-        st.image(encoded_image_url, use_column_width=True, caption=selected_news["title"])
-
+        st.image(selected_news["image_url"], use_column_width=True, caption=selected_news["title"])
         st.markdown(f"""
             <div class="news-container">
                 <div class="news-title">{selected_news["title"]}</div>
