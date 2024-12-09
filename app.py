@@ -41,23 +41,17 @@ def generate_shareable_link(news_id):
 query_params = st.experimental_get_query_params()
 selected_news_id = query_params.get("news_id", [None])[0]
 
-# Find and display the specific news article if `news_id` is provided
+# Find and display the specific news article if news_id is provided
 if selected_news_id:
     selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
     if selected_news:
-        # Display the main image of the article
-        if "image_url" in selected_news and selected_news["image_url"]:
-            st.image(selected_news["image_url"], use_container_width=True, caption=selected_news["title"])
-
-        # Render the full article content with embedded HTML and images
+        st.image(selected_news["image_url"], use_container_width=True, caption=selected_news["title"])
         st.markdown(f"""
             <div class="news-container">
-                <div class="news-title" style="font-size: 24px; font-weight: bold;">{selected_news["title"]}</div>
-                <div class="news-subtitle" style="font-size: 18px; margin-bottom: 20px;">{selected_news["subtitle"]}</div>
-                <div class="news-content" style="font-size: 16px; line-height: 1.6;">
-                    {selected_news["content"]}
-                </div>
-                <div class="news-takeaway" style="margin-top: 20px; font-style: italic;">📌 : {selected_news["takeaway"]}</div>
+                <div class="news-title">{selected_news["title"]}</div>
+                <div class="news-subtitle">{selected_news["subtitle"]}</div>
+                <div class="news-content">{selected_news["content"]}</div>
+                <div class="news-takeaway">📌 : {selected_news["takeaway"]}</div>
             </div>
         """, unsafe_allow_html=True)
     else:
@@ -67,3 +61,4 @@ else:
 
 # Add footer
 footer()
+
