@@ -1,24 +1,20 @@
 import streamlit as st
 from streamlit_quill import st_quill  # Rich text editor
 import json
-import base64
 import requests
-import time  # For generating unique timestamps for filenames
-from docx import Document  # Library for handling .docx files
+import time
+import os
+import zipfile
+from docx import Document
 
 
-# Constants for GitHub integration
+# GitHub Constants
 GITHUB_USER = "habdulhaq87"
 GITHUB_REPO = "news"
 GITHUB_PAT = st.secrets["github_pat"]
 JSON_FILE = "news.json"
 GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
 
-
-import os
-import zipfile
-import time
-from docx import Document
 
 def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     """
@@ -72,15 +68,13 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
 
 def main(news_data, save_news_data, save_uploaded_image_to_github):
     """
-    Main function to add a new article.
-    Allows users to upload a .docx file, embed an image, and save the article.
+    Main function to add a new article with styled content and images.
 
     Args:
         news_data (list): The existing news data.
         save_news_data (function): Function to save updated news data.
         save_uploaded_image_to_github (function): Function to upload an image to GitHub and return its URL.
     """
-    # Page Title
     st.title("Add New Article")
 
     # Form to collect article details
@@ -92,37 +86,19 @@ def main(news_data, save_news_data, save_uploaded_image_to_github):
         new_subtitle = st.text_input("Subtitle", key="new_subtitle")
 
         # Upload .docx File
-        st.markdown("### Upload .docx File")
-        uploaded_docx = st.file_uploader("Upload a .docx file for content", type=["docx"], key="docx_upload")
+        st.markdown("### Upload .docx File for Content")
+        uploaded_docx = st.file_uploader("Upload a .docx file", type=["docx"], key="docx_upload")
 
         # Content Editor Section
-        st.markdown("### Content Editor")
+        new_content = ""
         if uploaded_docx:
             # Extract content from the uploaded .docx file
-            extracted_content = extract_content_from_docx(uploaded_docx, save_uploaded_image_to_github)
-            new_content = st.text_area("Extracted Content", value=extracted_content, height=300, key="new_content_docx")
+            new_content = extract_content_from_docx(uploaded_docx, save_uploaded_image_to_github)
+            st.text_area("Extracted Content", value=new_content, height=300, key="new_content_textarea", disabled=True)
         else:
             # Use the Quill editor if no .docx is uploaded
+            st.markdown("### Content Editor")
             new_content = st_quill("Write your content here", key="new_content_quill")
-
-        # Image Upload for Embedding in Content
-        uploaded_image = st.file_uploader(
-            "Upload Image to Embed (jpg, png)",
-            type=["jpg", "png"],
-            key="new_image_embed"
-        )
-
-        # Initialize variables to store image information
-        image_url = None
-        if uploaded_image:
-            # Save uploaded image and get the URL
-            image_url = save_uploaded_image_to_github(uploaded_file=uploaded_image)
-            if image_url:
-                # Automatically embed the image in the content
-                new_content += f'\n\n![Image Description]({image_url})'
-                st.success("Image uploaded and embedded in the content!")
-            else:
-                st.error("Failed to upload image. Please try again.")
 
         # Article Takeaway
         new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway")
@@ -138,9 +114,8 @@ def main(news_data, save_news_data, save_uploaded_image_to_github):
                     "id": new_title.replace(" ", "_").lower(),
                     "title": new_title,
                     "subtitle": new_subtitle,
-                    "content": new_content,  # Content now includes extracted content or embedded image URLs
+                    "content": new_content,  # Content includes extracted content or manual text
                     "takeaway": new_takeaway,
-                    "image_url": image_url,  # Save the image URL separately
                 }
                 # Append the new article to the news data
                 news_data.append(new_article)
