@@ -1,9 +1,13 @@
+import streamlit as st
 import json
 import os
 import requests
 import base64
 import time
-import streamlit as st
+from view import view_articles  # Import view_articles function
+from bot import post_to_telegram  # Import Telegram posting functionality
+from style import apply_styles, footer  # Import styles and footer functions
+from style_page import style_page  # Import style management page
 
 # Constants for GitHub integration
 GITHUB_USER = "habdulhaq87"
@@ -70,3 +74,30 @@ def save_news_data(news_data):
     with open(JSON_FILE, "w", encoding="utf-8") as file:
         json.dump(news_data, file, ensure_ascii=False, indent=4)
     upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
+
+# Initialize the Streamlit app
+st.set_page_config(page_title="News Backend", layout="wide")
+
+# Apply styles globally
+apply_styles()
+
+# Sidebar Navigation as Buttons
+st.sidebar.title("Navigation")
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = "view"  # Default page
+
+if st.sidebar.button("View Articles"):
+    st.session_state["current_page"] = "view"
+if st.sidebar.button("Style Page"):
+    st.session_state["current_page"] = "style"
+
+# Load existing news data
+news_data = load_news_data()
+
+# Page: View Articles
+if st.session_state["current_page"] == "view":
+    view_articles(news_data, save_news_data, save_uploaded_image_to_github, post_to_telegram)
+
+# Page: Style Page
+elif st.session_state["current_page"] == "style":
+    style_page()
