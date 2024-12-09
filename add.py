@@ -1,6 +1,5 @@
 import streamlit as st
 from streamlit_quill import st_quill  # Rich text editor
-from backend import save_uploaded_image_to_github, upload_to_github  # Import backend functions
 import json
 import base64
 import requests  # Import requests for API calls
@@ -56,12 +55,46 @@ def save_news_data(news_data):
         st.error("Failed to update news data on GitHub. Please check your permissions or the repository.")
 
 
+def save_uploaded_image_to_github(uploaded_file):
+    """Save uploaded image to GitHub and return its URL."""
+    if not uploaded_file:
+        return None
+
+    timestamp = int(time.time())
+    filename = f"{timestamp}_{uploaded_file.name}"
+    file_path = f"/tmp/{filename}"
+
+    with open(file_path, "wb") as file:
+        file.write(uploaded_file.getbuffer())
+
+    github_path = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/photo/{filename}"
+
+    with open(file_path, "rb") as file:
+        content = base64.b64encode(file.read()).decode("utf-8")
+
+    payload = {
+        "message": f"Add image {filename}",
+        "content": content,
+        "sha": None,  # For new files, SHA is not required
+    }
+
+    headers = {"Authorization": f"token {GITHUB_PAT}"}
+    response = requests.put(github_path, headers=headers, json=payload)
+
+    if response.status_code in [200, 201]:
+        return f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/photo/{filename}"
+    else:
+        st.error("Failed to upload the image to GitHub.")
+        return None
+
+
 def main(news_data):
     """
     Main function to add a new article.
     Allows users to upload an image, embed it in the content, and save the article.
     """
-    st.title("Add New Article")  # Relies on backend.py's st.set_page_config
+    # Page Title
+    st.title("Add New Article")
 
     # Form to collect article details
     with st.form("add_article_form", clear_on_submit=True):
@@ -86,7 +119,7 @@ def main(news_data):
         image_url = None
         if uploaded_image:
             # Save uploaded image and get the URL
-            image_url = save_uploaded_image_to_github(uploaded_image)
+            image_url = save_uploaded_image_to_github(uploaded_file=uploaded_image)
             if image_url:
                 # Automatically embed the image in the content
                 new_content += f'\n\n![Image Description]({image_url})'
@@ -116,5 +149,6 @@ def main(news_data):
                 news_data.append(new_article)
                 # Save updated news data to GitHub
                 save_news_data(news_data)
+                st.success("Article added successfully!")
             else:
                 st.error("All fields are required except Takeaway.")
