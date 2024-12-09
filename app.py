@@ -42,7 +42,11 @@ def generate_shareable_link(news_id):
 def display_images_from_content(content):
     """
     Parse the Markdown content and explicitly display any embedded images.
+    Remove default placeholder text like 'Write your content here'.
     """
+    # Remove default placeholder text
+    content = content.replace("Write your content here", "").strip()
+
     # Regex to find Markdown image syntax: ![Alt Text](URL)
     image_pattern = r"!\[.*?\]\((.*?)\)"
     image_urls = re.findall(image_pattern, content)
@@ -51,7 +55,7 @@ def display_images_from_content(content):
         st.image(url, use_column_width=True)
 
     # Remove the image Markdown syntax from the content
-    content_without_images = re.sub(image_pattern, "", content)
+    content_without_images = re.sub(image_pattern, "", content).strip()
     return content_without_images
 
 # Check if the app is accessed with a query parameter
