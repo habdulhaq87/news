@@ -34,25 +34,32 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
         if paragraph.text.strip():
             content += f"{paragraph.text}\n\n"
 
-    # Extract and save images
+    # Extract images
     for rel in document.part.rels.values():
         if "image" in rel.target_ref:
-            # Extract image data
-            image_data = document.part.package.part_related_by(rel).blob
+            try:
+                # Access the image binary data
+                image_part = document.part.related_parts[rel.target_ref]
+                image_data = image_part.blob
 
-            # Save image locally
-            timestamp = int(time.time())
-            filename = f"{timestamp}_{rel.target_ref.split('/')[-1].split('.')[0]}.jpg"
+                # Save the image locally
+                timestamp = int(time.time())
+                filename = f"{timestamp}.jpg"
+                file_path = f"/tmp/{filename}"
 
-            with open(f"/tmp/{filename}", "wb") as img_file:
-                img_file.write(image_data)
+                with open(file_path, "wb") as img_file:
+                    img_file.write(image_data)
 
-            # Upload the image to GitHub
-            image_url = save_uploaded_image_to_github(open(f"/tmp/{filename}", "rb"))
-            if image_url:
-                content += f"![Image Description]({image_url})\n\n"
+                # Upload the image to GitHub
+                with open(file_path, "rb") as img_file:
+                    image_url = save_uploaded_image_to_github(img_file)
+                if image_url:
+                    content += f"![Image Description]({image_url})\n\n"
+            except Exception as e:
+                st.error(f"Error processing image: {e}")
 
     return content.strip()
+
 
 def main(news_data, save_news_data, save_uploaded_image_to_github):
     """
