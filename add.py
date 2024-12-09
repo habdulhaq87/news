@@ -26,12 +26,14 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     Returns:
         str: The extracted content in Markdown format.
     """
+    from pathlib import Path
+
     document = Document(docx_file)
     content = ""
 
     # Ensure the "photo" directory exists
-    photo_dir = os.path.join(os.getcwd(), "photo")
-    os.makedirs(photo_dir, exist_ok=True)
+    photo_dir = Path(os.getcwd()) / "photo"
+    photo_dir.mkdir(parents=True, exist_ok=True)
 
     # Extract text paragraphs
     for paragraph in document.paragraphs:
@@ -47,12 +49,11 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
                 # Extract image data
                 image_data = docx_zip.read(image_file)
 
-                # Generate a unique filename
+                # Generate a unique filename and save in "photo" directory
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{os.path.basename(image_file)}"
-                file_path = os.path.join(photo_dir, filename)
+                file_path = photo_dir / filename
 
-                # Save the image in the "photo" directory
                 with open(file_path, "wb") as img_file:
                     img_file.write(image_data)
 
