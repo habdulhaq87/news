@@ -15,6 +15,11 @@ JSON_FILE = "news.json"
 GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
 
 
+import os
+import zipfile
+import time
+from docx import Document
+
 def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     """
     Extract content and images from a .docx file.
@@ -26,9 +31,6 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     Returns:
         str: The extracted content in Markdown format.
     """
-    import zipfile
-    import io
-
     # Load the .docx file
     document = Document(docx_file)
     content = ""
@@ -47,11 +49,12 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
                 # Extract image data
                 image_data = docx_zip.read(image_file)
 
-                # Save the image locally
+                # Generate a unique filename
                 timestamp = int(time.time())
-                filename = f"{timestamp}_{image_file.split('/')[-1]}"
+                filename = f"{timestamp}_{os.path.basename(image_file)}"
                 file_path = f"/tmp/{filename}"
 
+                # Save the image locally
                 with open(file_path, "wb") as img_file:
                     img_file.write(image_data)
 
