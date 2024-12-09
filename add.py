@@ -29,6 +29,10 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     document = Document(docx_file)
     content = ""
 
+    # Ensure the "photo" directory exists
+    photo_dir = os.path.join(os.getcwd(), "photo")
+    os.makedirs(photo_dir, exist_ok=True)
+
     # Extract text paragraphs
     for paragraph in document.paragraphs:
         if paragraph.text.strip():
@@ -46,9 +50,9 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
                 # Generate a unique filename
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{os.path.basename(image_file)}"
-                file_path = f"/tmp/{filename}"
+                file_path = os.path.join(photo_dir, filename)
 
-                # Save the image locally
+                # Save the image in the "photo" directory
                 with open(file_path, "wb") as img_file:
                     img_file.write(image_data)
 
@@ -62,8 +66,6 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
                 st.error(f"Error processing image: {image_file} - {e}")
 
     return content.strip()
-
-
 def main(news_data, save_news_data, save_uploaded_image_to_github):
     """
     Main function to add a new article with styled content and images.
