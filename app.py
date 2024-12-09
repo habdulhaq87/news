@@ -3,6 +3,7 @@ import json
 import requests
 from urllib.parse import urlencode
 from style import apply_styles, footer  # Import styles and footer
+import re  # For parsing image URLs from Markdown
 
 # Set up page configuration
 st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
@@ -37,6 +38,22 @@ def generate_shareable_link(news_id):
     long_url = f"{base_url}?{urlencode(params)}"
     return shorten_url(long_url)
 
+# Function to extract and display images from Markdown content
+def display_images_from_content(content):
+    """
+    Parse the Markdown content and explicitly display any embedded images.
+    """
+    # Regex to find Markdown image syntax: ![Alt Text](URL)
+    image_pattern = r"!\[.*?\]\((.*?)\)"
+    image_urls = re.findall(image_pattern, content)
+
+    for url in image_urls:
+        st.image(url, use_column_width=True)
+
+    # Remove the image Markdown syntax from the content
+    content_without_images = re.sub(image_pattern, "", content)
+    return content_without_images
+
 # Check if the app is accessed with a query parameter
 query_params = st.experimental_get_query_params()
 selected_news_id = query_params.get("news_id", [None])[0]
@@ -52,8 +69,12 @@ if selected_news_id:
                 <div class="news-subtitle">{selected_news["subtitle"]}</div>
             </div>
         """, unsafe_allow_html=True)
-        # Render the content as Markdown to properly display embedded images
-        st.markdown(selected_news["content"])
+        
+        # Process and display images embedded in the content
+        remaining_content = display_images_from_content(selected_news["content"])
+        # Render the remaining content as Markdown
+        st.markdown(remaining_content)
+        
         st.markdown(f"""
             <div class="news-takeaway">📌 : {selected_news["takeaway"]}</div>
         """, unsafe_allow_html=True)
