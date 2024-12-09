@@ -1,12 +1,14 @@
 import streamlit as st
-import json
-from add import add_article_page  # Import the add article page
-from view import view_articles  # Import the view articles page
-from style_page import style_page  # Import the style management page
-from backend_utils import load_news_data  # Import utility functions
+from view import view_articles  # Import view_articles function
+from style import apply_styles, footer  # Import styles and footer functions
+from style_page import style_page  # Import style management page
+from add import add_article_page  # Import add article page
 
 # Initialize the Streamlit app
 st.set_page_config(page_title="News Backend", layout="wide")
+
+# Apply styles globally
+apply_styles()
 
 # Sidebar Navigation as Buttons
 st.sidebar.title("Navigation")
@@ -31,7 +33,6 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-# Session state for current page
 if "current_page" not in st.session_state:
     st.session_state["current_page"] = "view"  # Default page
 
@@ -42,13 +43,10 @@ if st.sidebar.button("View Articles"):
 if st.sidebar.button("Style Page"):
     st.session_state["current_page"] = "style"
 
-# Load existing news data
-news_data = load_news_data()
-
-# Route to the appropriate page
+# Page Navigation
 if st.session_state["current_page"] == "add":
-    add_article_page(news_data)
+    add_article_page()
 elif st.session_state["current_page"] == "view":
-    view_articles(news_data)
+    view_articles()
 elif st.session_state["current_page"] == "style":
     style_page()
