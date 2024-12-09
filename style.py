@@ -9,6 +9,8 @@ STYLE_CONFIG = {
     "news_content_size": "20px",
     "footer_bg_color": "#f8f9fa",
     "footer_border_color": "#dee2e6",
+    "image_max_width": "100%",  # Ensure images fit within container
+    "image_margin": "10px 0",  # Add spacing around images
 }
 
 def generate_styles():
@@ -45,6 +47,12 @@ def generate_styles():
                 line-height: 1.8;
                 color: #555555;
                 margin-bottom: 20px;
+            }}
+
+            .news-content img {{
+                max-width: {STYLE_CONFIG['image_max_width']};
+                margin: {STYLE_CONFIG['image_margin']};
+                display: block;
             }}
 
             .footer-container {{
