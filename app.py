@@ -31,15 +31,26 @@ def process_markdown_with_images(content):
     """
     Parse and process Markdown content to ensure URLs are encoded.
     """
+    st.write("### Raw Content Before Processing")
+    st.write(content)  # Debug: Print the raw content
+
     image_pattern = r"!\[.*?\]\((.*?)\)"  # Matches Markdown image syntax
     def encode_image_url(match):
         url = match.group(1)
         encoded_url = encode_url(url)
+        st.write(f"Encoded URL: {encoded_url}")  # Debug: Print encoded URLs
         return f"![Image]({encoded_url})"
-    
+
     # Replace all image URLs with encoded versions
     content = re.sub(image_pattern, encode_image_url, content)
-    return markdown(content)  # Convert processed Markdown to HTML
+    st.write("### Processed Markdown with Encoded URLs")
+    st.write(content)  # Debug: Print processed Markdown
+
+    html_content = markdown(content)  # Convert Markdown to HTML
+    st.write("### Converted HTML")
+    st.write(html_content)  # Debug: Print converted HTML
+
+    return html_content
 
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
@@ -55,11 +66,13 @@ selected_news_id = query_params.get("news_id", [None])[0]
 if selected_news_id:
     selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
     if selected_news:
+        st.write("### Selected News Debug Info")
+        st.json(selected_news)  # Debug: Print the selected news JSON object
+
         # Display the main image
         encoded_image_url = encode_url(selected_news["image_url"])
         st.image(encoded_image_url, use_column_width=True, caption=selected_news["title"])
 
-        # Display the title and subtitle
         st.markdown(f"""
             <div class="news-container">
                 <div class="news-title">{selected_news["title"]}</div>
@@ -71,7 +84,6 @@ if selected_news_id:
         html_content = process_markdown_with_images(selected_news["content"])
         st.components.v1.html(html_content, height=500, scrolling=True)
 
-        # Display the takeaway
         st.markdown(f"""
             <div class="news-takeaway">📌 : {selected_news["takeaway"]}</div>
         """, unsafe_allow_html=True)
