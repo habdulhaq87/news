@@ -2,9 +2,9 @@ import streamlit as st
 import json
 import requests
 from urllib.parse import urlencode, quote
-from markdown import markdown  # For converting Markdown to HTML
+from markdown import markdown  # Import markdown for HTML rendering
 from style import apply_styles, footer  # Import styles and footer
-import re  # For parsing image URLs in Markdown
+import re  # For parsing image URLs from Markdown
 
 # Set up page configuration
 st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
@@ -26,26 +26,24 @@ def encode_url(url):
     """
     return quote(url, safe=":/")
 
-# Function to process and encode image URLs in Markdown
-def process_markdown_with_images(content):
+# Function to process Markdown content into HTML
+def render_content_as_html(content):
     """
-    Parse and process Markdown content to ensure URLs are encoded.
+    Convert Markdown content to HTML and explicitly encode image URLs.
     """
-    image_pattern = r"!\[.*?\]\((.*?)\)"  # Matches Markdown image syntax
-    def encode_image_url(match):
-        url = match.group(1)
-        encoded_url = encode_url(url)
-        return f"![Image]({encoded_url})"
-    
-    # Replace all image URLs with encoded versions
-    content = re.sub(image_pattern, encode_image_url, content)
-    return markdown(content)  # Convert processed Markdown to HTML
+    # Regex to find Markdown image syntax: ![Alt Text](URL)
+    image_pattern = r"!\[.*?\]\((.*?)\)"
 
-# Helper function to generate a shareable link
-def generate_shareable_link(news_id):
-    base_url = "https://habdulhaqnews.streamlit.app"  # Replace with your Streamlit URL
-    params = {"news_id": news_id}
-    return f"{base_url}?{urlencode(params)}"
+    def encode_url_in_markdown(match):
+        encoded_url = encode_url(match.group(1))
+        return f"![Alt Text]({encoded_url})"
+
+    # Encode URLs in Markdown
+    content = re.sub(image_pattern, encode_url_in_markdown, content)
+
+    # Convert Markdown to HTML
+    html_content = markdown(content)
+    return html_content
 
 # Check if the app is accessed with a query parameter
 query_params = st.experimental_get_query_params()
@@ -55,11 +53,10 @@ selected_news_id = query_params.get("news_id", [None])[0]
 if selected_news_id:
     selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
     if selected_news:
-        # Display the main image
+        # Ensure the main image URL is encoded
         encoded_image_url = encode_url(selected_news["image_url"])
         st.image(encoded_image_url, use_column_width=True, caption=selected_news["title"])
 
-        # Display the title and subtitle
         st.markdown(f"""
             <div class="news-container">
                 <div class="news-title">{selected_news["title"]}</div>
@@ -67,11 +64,10 @@ if selected_news_id:
             </div>
         """, unsafe_allow_html=True)
 
-        # Process and render the content
-        html_content = process_markdown_with_images(selected_news["content"])
+        # Convert content to HTML and display it explicitly
+        html_content = render_content_as_html(selected_news["content"])
         st.components.v1.html(html_content, height=500, scrolling=True)
 
-        # Display the takeaway
         st.markdown(f"""
             <div class="news-takeaway">📌 : {selected_news["takeaway"]}</div>
         """, unsafe_allow_html=True)
