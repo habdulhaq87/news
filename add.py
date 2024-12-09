@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_quill import st_quill  # Rich text editor
 import json
 import base64
 import requests
@@ -17,7 +16,7 @@ GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}
 def main(news_data, save_news_data, save_uploaded_image_to_github):
     """
     Main function to add a new article.
-    Allows users to upload an image, embed it in the content, and save the article.
+    Allows users to manage content blocks dynamically and save the article.
 
     Args:
         news_data (list): The existing news data.
@@ -27,59 +26,59 @@ def main(news_data, save_news_data, save_uploaded_image_to_github):
     # Page Title
     st.title("Add New Article")
 
-    # Form to collect article details
-    with st.form("add_article_form", clear_on_submit=True):
-        # Article Title
-        new_title = st.text_input("Title", key="new_title")
-        
-        # Article Subtitle
-        new_subtitle = st.text_input("Subtitle", key="new_subtitle")
-        
-        # Content Editor Section
-        st.markdown("### Content Editor")
-        new_content = st_quill("Write your content here", key="new_content")  # Rich text editor
+    # Collect article metadata
+    new_title = st.text_input("Title")
+    new_subtitle = st.text_input("Subtitle")
+    new_takeaway = st.text_area("Takeaway (Markdown supported)")
 
-        # Image Upload for Embedding in Content
-        uploaded_image = st.file_uploader(
-            "Upload Image to Embed (jpg, png)", 
-            type=["jpg", "png"], 
-            key="new_image_embed"
-        )
+    # Initialize a list to store content blocks
+    content_blocks = []
 
-        # Initialize variables to store image information
-        image_url = None
-        if uploaded_image:
-            # Save uploaded image and get the URL
-            image_url = save_uploaded_image_to_github(uploaded_file=uploaded_image)
-            if image_url:
-                # Automatically embed the image in the content
-                new_content += f'\n\n![Image Description]({image_url})'
-                st.success("Image uploaded and embedded in the content!")
-            else:
-                st.error("Failed to upload image. Please try again.")
+    # Add a new content block
+    st.markdown("### Add Content Blocks")
+    if st.button("Add Text Block"):
+        new_text = st.text_area("Text Block Content", key=f"text_block_{len(content_blocks)}")
+        content_blocks.append({"type": "text", "value": new_text})
 
-        # Article Takeaway
-        new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway")
+    uploaded_image = st.file_uploader("Upload Image", type=["jpg", "png"])
+    if uploaded_image:
+        # Save the uploaded image to GitHub
+        image_url = save_uploaded_image_to_github(uploaded_image)
+        if image_url:
+            image_caption = st.text_input("Image Caption", key=f"caption_{len(content_blocks)}")
+            content_blocks.append({
+                "type": "image",
+                "value": image_url,
+                "alt": "Image description",
+                "caption": image_caption
+            })
+            st.success("Image uploaded successfully and added to content blocks!")
+        else:
+            st.error("Failed to upload image. Please try again.")
 
-        # Submit Button
-        submitted = st.form_submit_button("Add Article")
+    # Preview current content blocks
+    st.markdown("### Content Preview")
+    for block in content_blocks:
+        if block["type"] == "text":
+            st.markdown(block["value"])
+        elif block["type"] == "image":
+            st.image(block["value"], caption=block.get("caption", ""))
 
-        # Form Submission Logic
-        if submitted:
-            if new_title and new_subtitle and new_content:
-                # Create the new article dictionary
-                new_article = {
-                    "id": new_title.replace(" ", "_").lower(),
-                    "title": new_title,
-                    "subtitle": new_subtitle,
-                    "content": new_content,  # Content now includes embedded image URLs
-                    "takeaway": new_takeaway,
-                    "image_url": image_url,  # Save the image URL separately
-                }
-                # Append the new article to the news data
-                news_data.append(new_article)
-                # Save updated news data to GitHub
-                save_news_data(news_data)
-                st.success("Article added successfully!")
-            else:
-                st.error("All fields are required except Takeaway.")
+    # Submit the article
+    if st.button("Save Article"):
+        if new_title and new_subtitle and content_blocks:
+            # Create the new article structure
+            new_article = {
+                "id": new_title.replace(" ", "_").lower(),
+                "title": new_title,
+                "subtitle": new_subtitle,
+                "content": content_blocks,
+                "takeaway": new_takeaway,
+                "image_url": content_blocks[0]["value"] if content_blocks and content_blocks[0]["type"] == "image" else None  # Use the first image as main if available
+            }
+            # Append the article to the news data and save it
+            news_data.append(new_article)
+            save_news_data(news_data)
+            st.success("Article added successfully!")
+        else:
+            st.error("Title, Subtitle, and at least one content block are required.")
