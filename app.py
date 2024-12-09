@@ -1,64 +1,62 @@
 import streamlit as st
-import json
-import requests
-from urllib.parse import urlencode
-from style import apply_styles, footer  # Import styles and footer
+from streamlit_quill import st_quill  # Rich text editor
+from backend import save_uploaded_image_to_github, save_news_data  # Import backend functions
 
-# Set up page configuration
-st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
+def main(news_data):
+    """
+    Main function to add a new article.
+    Allows users to upload an image, embed it in the content, and save the article.
+    """
+    st.title("Add New Article")  # Relies on backend.py's st.set_page_config
 
-# Apply custom styles
-apply_styles()
+    # Form to collect article details
+    with st.form("add_article_form", clear_on_submit=True):
+        # Article Title
+        new_title = st.text_input("Title", key="new_title")
+        
+        # Article Subtitle
+        new_subtitle = st.text_input("Subtitle", key="new_subtitle")
+        
+        # Content Editor Section
+        st.markdown("### Content Editor")
+        new_content = st_quill("Write your content here", key="new_content")  # Rich text editor
 
-# Load news from the JSON file
-def load_news_data():
-    with open("news.json", "r", encoding="utf-8") as file:
-        return json.load(file)
+        # Image Upload for Embedding in Content
+        uploaded_image = st.file_uploader(
+            "Upload Image to Embed (jpg, png)", 
+            type=["jpg", "png"], 
+            key="new_image_embed"
+        )
+        if uploaded_image:
+            # Save uploaded image and get the URL
+            image_url = save_uploaded_image_to_github(uploaded_image)
+            if image_url:
+                # Automatically embed the image in the content
+                new_content += f'\n\n![Image Description]({image_url})'
+                st.success("Image uploaded and embedded in the content!")
 
-news_data = load_news_data()
+        # Article Takeaway
+        new_takeaway = st.text_area("Takeaway (Markdown supported)", key="new_takeaway")
 
-# Helper function to shorten a URL using TinyURL API
-def shorten_url(long_url):
-    try:
-        response = requests.get(f"http://tinyurl.com/api-create.php?url={long_url}")
-        if response.status_code == 200:
-            return response.text.strip()
-        else:
-            st.warning(f"TinyURL API failed with status code {response.status_code}. Using the long URL instead.")
-            return long_url
-    except Exception as e:
-        st.error(f"Error generating short URL: {e}")
-        return long_url
+        # Submit Button
+        submitted = st.form_submit_button("Add Article")
 
-# Helper function to generate a shareable link
-def generate_shareable_link(news_id):
-    base_url = "https://habdulhaqnews.streamlit.app"  # Replace with your Streamlit URL
-    params = {"news_id": news_id}
-    long_url = f"{base_url}?{urlencode(params)}"
-    return shorten_url(long_url)
-
-# Check if the app is accessed with a query parameter
-query_params = st.experimental_get_query_params()
-selected_news_id = query_params.get("news_id", [None])[0]
-
-# Find and display the specific news article if news_id is provided
-if selected_news_id:
-    selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
-    if selected_news:
-        st.image(selected_news["image_url"], use_container_width=True, caption=selected_news["title"])
-        st.markdown(f"""
-            <div class="news-container">
-                <div class="news-title">{selected_news["title"]}</div>
-                <div class="news-subtitle">{selected_news["subtitle"]}</div>
-                <div class="news-content">{selected_news["content"]}</div>
-                <div class="news-takeaway">📌 : {selected_news["takeaway"]}</div>
-            </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.warning("The specified news article could not be found.")
-else:
-    st.warning("No specific article selected. Please use a valid link.")
-
-# Add footer
-footer()
-
+        # Form Submission Logic
+        if submitted:
+            if new_title and new_subtitle and new_content:
+                # Create the new article dictionary
+                new_article = {
+                    "id": new_title.replace(" ", "_").lower(),
+                    "title": new_title,
+                    "subtitle": new_subtitle,
+                    "content": new_content,  # Content now includes embedded image URLs
+                    "takeaway": new_takeaway,
+                    "image_url": image_url if uploaded_image else None,  # Preserve separate image URL if needed
+                }
+                # Append the new article to the news data
+                news_data.append(new_article)
+                # Save updated news data to the backend
+                save_news_data(news_data)
+                st.success("Article added successfully!")
+            else:
+                st.error("All fields are required except Takeaway.")
