@@ -14,7 +14,6 @@ GITHUB_PAT = st.secrets["github_pat"]
 JSON_FILE = "news.json"
 GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
 
-
 def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     """
     Extract content and images from a .docx file.
@@ -26,33 +25,34 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     Returns:
         str: The extracted content in Markdown format.
     """
-    from pathlib import Path
+    import shutil
+    from docx.shared import Length
 
+    # Load the .docx file
     document = Document(docx_file)
     content = ""
 
     # Ensure the "photo" directory exists
-    photo_dir = Path(os.getcwd()) / "photo"
-    photo_dir.mkdir(parents=True, exist_ok=True)
+    photo_dir = os.path.join(os.getcwd(), "photo")
+    os.makedirs(photo_dir, exist_ok=True)
 
-    # Extract text paragraphs
+    # Extract text
     for paragraph in document.paragraphs:
         if paragraph.text.strip():
             content += f"{paragraph.text}\n\n"
 
-    # Handle images in .docx
-    with zipfile.ZipFile(docx_file, "r") as docx_zip:
-        image_files = [f for f in docx_zip.namelist() if f.startswith("word/media/")]
-
-        for image_file in image_files:
+    # Extract images from the .docx file
+    for rel in document.part.rels.values():
+        if "image" in rel.target_ref:
             try:
-                # Extract image data
-                image_data = docx_zip.read(image_file)
+                # Access the binary data of the image
+                image_part = document.part.related_parts[rel.target_ref]
+                image_data = image_part.blob
 
-                # Generate a unique filename and save in "photo" directory
+                # Save the image to the photo directory
                 timestamp = int(time.time())
-                filename = f"{timestamp}_{os.path.basename(image_file)}"
-                file_path = photo_dir / filename
+                filename = f"{timestamp}_{os.path.basename(rel.target_ref)}"
+                file_path = os.path.join(photo_dir, filename)
 
                 with open(file_path, "wb") as img_file:
                     img_file.write(image_data)
@@ -64,9 +64,10 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
                 if image_url:
                     content += f"![Image Description]({image_url})\n\n"
             except Exception as e:
-                st.error(f"Error processing image: {image_file} - {e}")
+                st.error(f"Error processing image: {rel.target_ref} - {e}")
 
     return content.strip()
+
 def main(news_data, save_news_data, save_uploaded_image_to_github):
     """
     Main function to add a new article with styled content and images.
