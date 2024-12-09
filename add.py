@@ -25,24 +25,23 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
     Returns:
         str: The extracted content in Markdown format.
     """
-    import shutil
-    from docx.shared import Length
+    from pathlib import Path
 
     # Load the .docx file
     document = Document(docx_file)
     content = ""
 
     # Ensure the "photo" directory exists
-    photo_dir = os.path.join(os.getcwd(), "photo")
-    os.makedirs(photo_dir, exist_ok=True)
+    photo_dir = Path(os.getcwd()) / "photo"
+    photo_dir.mkdir(parents=True, exist_ok=True)
 
-    # Extract text
+    # Extract text paragraphs
     for paragraph in document.paragraphs:
         if paragraph.text.strip():
             content += f"{paragraph.text}\n\n"
 
     # Extract images from the .docx file
-    for rel in document.part.rels.values():
+    for rel_id, rel in document.part.rels.items():
         if "image" in rel.target_ref:
             try:
                 # Access the binary data of the image
@@ -51,8 +50,8 @@ def extract_content_from_docx(docx_file, save_uploaded_image_to_github):
 
                 # Save the image to the photo directory
                 timestamp = int(time.time())
-                filename = f"{timestamp}_{os.path.basename(rel.target_ref)}"
-                file_path = os.path.join(photo_dir, filename)
+                filename = f"{timestamp}_{Path(rel.target_ref).name}"
+                file_path = photo_dir / filename
 
                 with open(file_path, "wb") as img_file:
                     img_file.write(image_data)
