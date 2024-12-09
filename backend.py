@@ -1,70 +1,54 @@
-import os
+import streamlit as st
 import json
-import time
-import requests
-import base64
+from add import add_article_page  # Import the add article page
+from view import view_articles  # Import the view articles page
+from style_page import style_page  # Import the style management page
+from backend_utils import load_news_data  # Import utility functions
 
-# Constants for GitHub integration
-GITHUB_USER = "habdulhaq87"
-GITHUB_REPO = "news"
-GITHUB_PAT = st.secrets["github_pat"]
+# Initialize the Streamlit app
+st.set_page_config(page_title="News Backend", layout="wide")
 
-JSON_FILE = "news.json"
-PHOTO_DIR = "photo"
+# Sidebar Navigation as Buttons
+st.sidebar.title("Navigation")
+st.sidebar.markdown(
+    """
+    <style>
+        .stButton>button {
+            background-color: #007BFF;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            padding: 8px 16px;
+            margin: 4px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .stButton>button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
-GITHUB_API_URL_JSON = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{JSON_FILE}"
-GITHUB_API_URL_PHOTO = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{PHOTO_DIR}"
+# Session state for current page
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = "view"  # Default page
 
-# Upload a file to GitHub
-def upload_to_github(file_path, github_path, commit_message):
-    with open(file_path, "rb") as file:
-        content = file.read()
+if st.sidebar.button("Add New Article"):
+    st.session_state["current_page"] = "add"
+if st.sidebar.button("View Articles"):
+    st.session_state["current_page"] = "view"
+if st.sidebar.button("Style Page"):
+    st.session_state["current_page"] = "style"
 
-    base64_content = base64.b64encode(content).decode("utf-8")
-    response = requests.get(github_path, headers={"Authorization": f"token {GITHUB_PAT}"})
-    sha = response.json().get("sha") if response.status_code == 200 else None
+# Load existing news data
+news_data = load_news_data()
 
-    payload = {
-        "message": commit_message,
-        "content": base64_content,
-        "sha": sha
-    }
-
-    response = requests.put(
-        github_path,
-        headers={"Authorization": f"token {GITHUB_PAT}"},
-        json=payload
-    )
-
-    return response.status_code in [200, 201]
-
-# Save uploaded image to GitHub and return its URL
-def save_uploaded_image_to_github(uploaded_file):
-    if not uploaded_file:
-        return None
-
-    timestamp = int(time.time())
-    filename = f"{timestamp}_{uploaded_file.name}"
-    file_path = os.path.join("/tmp", filename)
-
-    with open(file_path, "wb") as file:
-        file.write(uploaded_file.getbuffer())
-
-    github_path = f"{GITHUB_API_URL_PHOTO}/{filename}"
-    if upload_to_github(file_path, github_path, f"Add image {filename}"):
-        return f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/{PHOTO_DIR}/{filename}"
-    return None
-
-# Load news data from GitHub
-def load_news_data():
-    response = requests.get(GITHUB_API_URL_JSON, headers={"Authorization": f"token {GITHUB_PAT}"})
-    if response.status_code == 200:
-        content = base64.b64decode(response.json().get("content")).decode("utf-8")
-        return json.loads(content)
-    return []
-
-# Save news data to GitHub
-def save_news_data(news_data):
-    with open(JSON_FILE, "w", encoding="utf-8") as file:
-        json.dump(news_data, file, ensure_ascii=False, indent=4)
-    upload_to_github(JSON_FILE, GITHUB_API_URL_JSON, "Update news.json via Streamlit backend")
+# Route to the appropriate page
+if st.session_state["current_page"] == "add":
+    add_article_page(news_data)
+elif st.session_state["current_page"] == "view":
+    view_articles(news_data)
+elif st.session_state["current_page"] == "style":
+    style_page()
