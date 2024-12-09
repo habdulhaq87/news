@@ -1,15 +1,17 @@
 import streamlit as st
-from streamlit_quill import st_quill
-from backend import load_news_data, save_news_data, save_uploaded_image_to_github
+import json
+import time
+import os
+from streamlit_quill import st_quill  # Rich text editor
+from backend import save_uploaded_image_to_github, load_news_data, save_news_data  # Import backend functions
 
-# Load existing news data
+# Initialize Streamlit
+st.set_page_config(page_title="Add New Article", layout="wide")
+
+# Page: Add New Article
+st.title("Add New Article")
 news_data = load_news_data()
 
-# Page Configuration
-st.set_page_config(page_title="Add New Article", layout="wide")
-st.title("Add New Article")
-
-# Form for adding a new article
 with st.form("add_article_form", clear_on_submit=True):
     new_title = st.text_input("Title", key="new_title")
     new_subtitle = st.text_input("Subtitle", key="new_subtitle")
