@@ -3,21 +3,15 @@ import json
 import requests
 from urllib.parse import urlencode
 from style import apply_styles, footer  # Import styles and footer
-import re  # For parsing image URLs from Markdown
-
 # Set up page configuration
 st.set_page_config(page_title="هەواڵی نوێ", page_icon="📰", layout="wide")
-
 # Apply custom styles
 apply_styles()
-
 # Load news from the JSON file
 def load_news_data():
     with open("news.json", "r", encoding="utf-8") as file:
         return json.load(file)
-
 news_data = load_news_data()
-
 # Helper function to shorten a URL using TinyURL API
 def shorten_url(long_url):
     try:
@@ -30,62 +24,32 @@ def shorten_url(long_url):
     except Exception as e:
         st.error(f"Error generating short URL: {e}")
         return long_url
-
 # Helper function to generate a shareable link
 def generate_shareable_link(news_id):
     base_url = "https://habdulhaqnews.streamlit.app"  # Replace with your Streamlit URL
     params = {"news_id": news_id}
     long_url = f"{base_url}?{urlencode(params)}"
     return shorten_url(long_url)
-
-# Function to extract and display images from Markdown content
-def display_images_from_content(content):
-    """
-    Parse the Markdown content and explicitly display any embedded images.
-    Remove default placeholder text like 'Write your content here'.
-    """
-    # Remove default placeholder text
-    content = content.replace("Write your content here", "").strip()
-
-    # Regex to find Markdown image syntax: ![Alt Text](URL)
-    image_pattern = r"!\[.*?\]\((.*?)\)"
-    image_urls = re.findall(image_pattern, content)
-
-    for url in image_urls:
-        st.image(url, use_column_width=True)
-
-    # Remove the image Markdown syntax from the content
-    content_without_images = re.sub(image_pattern, "", content).strip()
-    return content_without_images
-
 # Check if the app is accessed with a query parameter
 query_params = st.experimental_get_query_params()
 selected_news_id = query_params.get("news_id", [None])[0]
-
 # Find and display the specific news article if news_id is provided
 if selected_news_id:
     selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
     if selected_news:
-        st.image(selected_news["image_url"], use_column_width=True, caption=selected_news["title"])
+        st.image(selected_news["image_url"], use_container_width=True, caption=selected_news["title"])
         st.markdown(f"""
             <div class="news-container">
                 <div class="news-title">{selected_news["title"]}</div>
                 <div class="news-subtitle">{selected_news["subtitle"]}</div>
+                <div class="news-content">{selected_news["content"]}</div>
+                <div class="news-takeaway">📌 : {selected_news["takeaway"]}</div>
             </div>
-        """, unsafe_allow_html=True)
-        
-        # Process and display images embedded in the content
-        remaining_content = display_images_from_content(selected_news["content"])
-        # Render the remaining content as Markdown
-        st.markdown(remaining_content)
-        
-        st.markdown(f"""
-            <div class="news-takeaway">📌 : {selected_news["takeaway"]}</div>
         """, unsafe_allow_html=True)
     else:
         st.warning("The specified news article could not be found.")
 else:
     st.warning("No specific article selected. Please use a valid link.")
-
 # Add footer
 footer()
+
