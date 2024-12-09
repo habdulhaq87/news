@@ -41,28 +41,19 @@ def generate_shareable_link(news_id):
 query_params = st.experimental_get_query_params()
 selected_news_id = query_params.get("news_id", [None])[0]
 
-# Function to display content with embedded images
-def render_content(content):
-    """
-    Render the content field, supporting Markdown and HTML.
-    """
-    if content.strip().startswith("<"):  # Assume content is HTML if it starts with an HTML tag
-        st.components.v1.html(content, height=500, scrolling=True)
-    else:
-        st.markdown(content, unsafe_allow_html=True)
-
 # Find and display the specific news article if news_id is provided
 if selected_news_id:
     selected_news = next((news for news in news_data if news["id"] == selected_news_id), None)
     if selected_news:
-        st.image(selected_news["image_url"], use_container_width=True, caption=selected_news["title"])
+        st.image(selected_news["image_url"], use_column_width=True, caption=selected_news["title"])
         st.markdown(f"""
             <div class="news-container">
                 <div class="news-title">{selected_news["title"]}</div>
                 <div class="news-subtitle">{selected_news["subtitle"]}</div>
             </div>
         """, unsafe_allow_html=True)
-        render_content(selected_news["content"])  # Render the content with embedded images
+        # Render the content as Markdown to properly display embedded images
+        st.markdown(selected_news["content"])
         st.markdown(f"""
             <div class="news-takeaway">📌 : {selected_news["takeaway"]}</div>
         """, unsafe_allow_html=True)
